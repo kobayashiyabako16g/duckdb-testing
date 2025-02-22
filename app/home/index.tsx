@@ -3,7 +3,6 @@ import { DataTable } from "~/components/DataTable";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import { FILE_NAME, TABLE_NAME } from "~/config/constants";
 import { useDuckDBContext } from "~/provider/duckdb";
-import { READ_WRITE } from "~/lib/duckdb";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import SearchBar from "~/components/SearchBar";
 import ThemeToggle from "~/components/ThemaToggle";
@@ -18,14 +17,6 @@ const readBuffer = async (
   db: AsyncDuckDB,
   buffer: ArrayBuffer,
 ): Promise<void> => {
-  try {
-    await db.open({
-      path: "opfs://duckdb-wasm-parquet.db",
-      accessMode: READ_WRITE,
-    });
-  } catch (error) {
-    console.warn("open error", error);
-  }
   await db.registerFileBuffer(`${FILE_NAME}`, new Uint8Array(buffer));
   const conn = await db.connect();
   try {

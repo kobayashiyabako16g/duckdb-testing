@@ -17,11 +17,19 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
 
 export async function InitDuckDB(): Promise<duckdb.AsyncDuckDB> {
   const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
+  // biome-ignore lint/style/noNonNullAssertion: <explanation>
   const worker = new Worker(bundle.mainWorker!);
   const logger = new duckdb.ConsoleLogger();
   const db = new duckdb.AsyncDuckDB(logger, worker);
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
-  // setDuckDB(db);
+  try {
+    await db.open({
+      path: "opfs://duckdb-wasm-parquet.db",
+      accessMode: duckdb.DuckDBAccessMode.READ_WRITE,
+    });
+  } catch (error) {
+    console.warn("open error", error);
+  }
   const conn = await db.connect();
   // Load HTTPFS extension
   await conn.query("INSTALL httpfs");
@@ -29,4 +37,3 @@ export async function InitDuckDB(): Promise<duckdb.AsyncDuckDB> {
   return db;
 }
 
-export const READ_WRITE = duckdb.DuckDBAccessMode.READ_WRITE;
