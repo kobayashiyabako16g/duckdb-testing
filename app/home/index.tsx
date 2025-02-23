@@ -52,7 +52,7 @@ type Props = {
 };
 export function HomeApp({ signedUrl }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +126,7 @@ export function HomeApp({ signedUrl }: Props) {
         </button>
         <button
           type="button"
-          disabled={loading}
+          disabled={loading || currentPage === 0}
           onClick={() => setCurrentPage((prev) => prev - 1)}
           className="mt-4 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 disabled:opacity-50"
         >
