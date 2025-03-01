@@ -1,6 +1,7 @@
 type Props = {
   data: any[];
 };
+
 export function DataTable({ data }: Props) {
   return (
     <table className="w-full border-collapse border">
@@ -8,9 +9,11 @@ export function DataTable({ data }: Props) {
         {data.map((value, index) => {
           return (
             <tr key={index}>
-              <td key={index} className="border p-2">
-                {value.CsvID}
-              </td>
+              {Object.keys(value).map((key) => (
+                <td key={key} className="border p-2">
+                  {value[key]}
+                </td>
+              ))}
             </tr>
           );
         })}
