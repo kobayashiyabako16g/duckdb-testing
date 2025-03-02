@@ -24,7 +24,7 @@ export async function InitDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
   await db.instantiate(bundle.mainModule, bundle.pthreadWorker);
   try {
     await db.open({
-      path: "opfs://duckdb-wasm-parquet.db",
+      path: `opfs://${dbName}.db`,
       accessMode: duckdb.DuckDBAccessMode.READ_WRITE,
     });
   } catch (error) {
