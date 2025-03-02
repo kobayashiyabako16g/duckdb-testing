@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { DataTable } from "~/components/DataTable";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import { FILE_NAME, TABLE_NAME } from "~/config/constants";
-import { useDuckDBContext } from "~/provider/duckdb";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import SearchBar from "~/components/SearchBar";
-import ThemeToggle from "~/components/ThemaToggle";
+import { useDuckDB } from "~/hooks/duckdb";
 
 const getRequetBuffer = async (
   PARQUET_FILE_URL: string,
@@ -50,7 +49,7 @@ const readBuffer = async (
 type Props = {
   signedUrl: string | undefined;
 };
-export function HomeApp({ signedUrl }: Props) {
+export function NoHeadApp({ signedUrl }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -58,7 +57,7 @@ export function HomeApp({ signedUrl }: Props) {
   const [loading, setLoading] = useState(true);
   const [hint, setHint] = useState("");
 
-  const { db, initialized } = useDuckDBContext();
+  const { db, initialized } = useDuckDB("duckdb-wasm-parquet");
   useEffect(() => {
     async function fetchData() {
       if (!initialized || !db || !signedUrl) return;
@@ -101,7 +100,6 @@ export function HomeApp({ signedUrl }: Props) {
     <main className="container mx-auto p-4">
       <div className="flex justtify-between items-center gap-4">
         <h1 className="text-2xl font-bold mb-4">Search</h1>
-        <ThemeToggle />
       </div>
       <div className="mb-4">
         <SearchBar onSearch={handleSearch} disabled={loading} />

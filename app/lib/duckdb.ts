@@ -15,7 +15,7 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   },
 };
 
-export async function InitDuckDB(): Promise<duckdb.AsyncDuckDB> {
+export async function InitDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
   const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
   // biome-ignore lint/style/noNonNullAssertion: <explanation>
   const worker = new Worker(bundle.mainWorker!);
@@ -36,4 +36,3 @@ export async function InitDuckDB(): Promise<duckdb.AsyncDuckDB> {
   await conn.query("LOAD httpfs");
   return db;
 }
-
