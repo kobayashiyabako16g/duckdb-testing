@@ -3,8 +3,20 @@ type Props = {
 };
 
 export function DataTable({ data }: Props) {
+  const keys = data.slice(0, 1).map(obj => Object.keys(obj))[0];
   return (
     <table className="w-full border-collapse border">
+      {(keys !== undefined && keys.length !== 0) && (
+        <thead>
+          <tr>
+            {keys.map((key) => (
+              <th key={key} className="border p-2">
+                {key}
+              </th>
+            ))}
+          </tr>
+        </thead>
+      )}
       <tbody>
         {data.map((value, index) => {
           return (

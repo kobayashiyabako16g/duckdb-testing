@@ -1,8 +1,8 @@
-import type { Route } from "./+types/nohead";
+import type { Route } from "./+types/home";
 
 import { GetS3SignedUr } from "~/loaders/s3";
 import { ACCESS_KEY_ID, BUCKET_NAME, SECRET_ACCESS_KEY } from "~/config/env";
-import { NoHeadApp } from "~/templates/csv/nohead";
+import { HeadApp } from "~/templates/csv";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,7 +11,7 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-const FILE_NAME = "output.csv";
+const FILE_NAME = "mock_data.csv";
 export async function loader({ params }: Route.LoaderArgs) {
   const signedUrl = await GetS3SignedUr({
     bucket: BUCKET_NAME,
@@ -23,8 +23,8 @@ export async function loader({ params }: Route.LoaderArgs) {
   });
   return { signedUrl };
 }
-export default function NoHead({ loaderData }: Route.ComponentProps) {
+export default function Csv({ loaderData }: Route.ComponentProps) {
   const { signedUrl } = loaderData;
 
-  return <NoHeadApp signedUrl={signedUrl} />;
+  return <HeadApp signedUrl={signedUrl} />;
 }

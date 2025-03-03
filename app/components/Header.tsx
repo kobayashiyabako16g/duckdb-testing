@@ -32,9 +32,9 @@ export function Header() {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill-rhule="evenodd"
+                fillRule="evenodd"
                 d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               />
             </svg>
             <svg
@@ -46,9 +46,9 @@ export function Header() {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               />
             </svg>
           </button>
@@ -70,6 +70,14 @@ export function Header() {
             </li>
             <li>
               <NavLink
+                to="/csv"
+                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+              >
+                csv
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
                 to="/csv/nohead"
                 className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
               >
@@ -80,17 +88,5 @@ export function Header() {
         </div>
       </div>
     </nav>
-
-    //     <nav>
-    //      <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-    // <div className="relative flex h-16 items-center justify-between">
-
-    // </div>
-    //       </div>
-    //     </nav>
-    //     <div className="flex justtify-between items-center gap-4">
-    //       <h1 className="text-2xl font-bold mb-4">Search</h1>
-    //       <ThemeToggle />
-    //     </div>
   );
 }

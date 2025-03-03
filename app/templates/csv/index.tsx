@@ -5,14 +5,14 @@ import LoadingSpinner from "~/components/LoadingSpinner";
 import SearchBar from "~/components/SearchBar";
 import { useDuckDB } from "~/hooks/duckdb";
 
-const TABLE_NAME = "my_table";
-const FILE_NAME = "ouput.csv";
 const getRequetBuffer = async (
   PARQUET_FILE_URL: string,
 ): Promise<ArrayBuffer> => {
   const response = await fetch(PARQUET_FILE_URL);
   return response.arrayBuffer();
 };
+const TABLE_NAME = "csv_table";
+const FILE_NAME = "mock_data.csv";
 const readBuffer = async (
   db: AsyncDuckDB,
   buffer: ArrayBuffer,
@@ -33,7 +33,7 @@ const readBuffer = async (
     if (!exists) {
       console.log("テーブルが存在しないため作成します");
       await conn.query(`
-        CREATE TABLE '${TABLE_NAME}' AS SELECT * FROM read_csv('${FILE_NAME}', names = ['Value']);
+        CREATE TABLE '${TABLE_NAME}' AS SELECT * FROM read_csv('${FILE_NAME}', delim=',', quote='"', escape='"', compression='gzip', header=true);
       `);
     } else {
       console.log("テーブルは既に存在します");
@@ -50,8 +50,9 @@ const readBuffer = async (
 type Props = {
   signedUrl: string | undefined;
 };
-export function NoHeadApp({ signedUrl }: Props) {
+export function HeadApp({ signedUrl }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchColumn, setSearchColumn] = useState("id");
   const [currentPage, setCurrentPage] = useState(0);
 
   const [data, setData] = useState<any[]>([]);
@@ -73,7 +74,7 @@ export function NoHeadApp({ signedUrl }: Props) {
         const conn = await db.connect();
         let query = `SELECT * FROM ${TABLE_NAME} LIMIT 10 OFFSET ${offset}`;
         if (searchTerm) {
-          query = `SELECT * FROM ${TABLE_NAME} WHERE Value ILIKE '%${searchTerm}%' LIMIT 10 OFFSET ${offset}`;
+          query = `SELECT * FROM ${TABLE_NAME} WHERE ${searchColumn} ILIKE '%${searchTerm}%' LIMIT 10 OFFSET ${offset}`;
         }
         setHint("表示準備をしています...");
         const result = await conn.query(query);
@@ -91,12 +92,15 @@ export function NoHeadApp({ signedUrl }: Props) {
     if (!initialized || !db) return;
     const conn = await db.connect();
     const result = await conn.query(
-      `SELECT * FROM ${TABLE_NAME} WHERE Value ILike '%${term}%' limit 10`,
+      `SELECT * FROM ${TABLE_NAME} WHERE ${searchColumn} ILike '%${term}%' limit 10`,
     );
     setData(result.toArray());
     setCurrentPage(0); // 検索時は最初のページにリセット
   };
 
+  const handleSearchColumn = (column: string) => {
+    setSearchColumn(column);
+  }
   return (
     <main className="container mx-auto p-4">
       <div className="flex justtify-between items-center gap-4">
