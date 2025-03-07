@@ -8,6 +8,9 @@ export function HomeApp() {
       <h1 className="font-bold">Home</h1>
       <ul className="list-disc list-inside text-blue-400">
         <li>
+          <Link to="/csv">CSV (field: id, first_name, last_name, email, ip_address)</Link>
+        </li>
+        <li>
           <Link to="/csv/nohead">CSV (no header)</Link>
         </li>
       </ul>

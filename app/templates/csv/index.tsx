@@ -4,6 +4,7 @@ import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import SearchBar from "~/components/SearchBar";
 import { useDuckDB } from "~/hooks/duckdb";
+import { SelectBox, type Option } from "~/components/SelectBox";
 
 const getRequetBuffer = async (
   PARQUET_FILE_URL: string,
@@ -47,6 +48,7 @@ const readBuffer = async (
   }
 };
 
+
 type Props = {
   signedUrl: string | undefined;
 };
@@ -55,6 +57,18 @@ export function HeadApp({ signedUrl }: Props) {
   const [searchColumn, setSearchColumn] = useState("id");
   const [currentPage, setCurrentPage] = useState(0);
 
+  const options: Option[] = [
+    { value: "id", label: "id", defaultSelected: true }, 
+    { value: "first_name", label: "first_name" },
+    { value: "last_name", label: "last_name" },
+    { value: "email", label: "email" },
+    { value: "gender", label: "gender" },
+    { value: "ip_address", label: "ip_address" },
+  ];
+  
+  const handleSelect = (value: string) => {
+    handleSearchColumn(value);
+  };
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [hint, setHint] = useState("");
@@ -100,14 +114,19 @@ export function HeadApp({ signedUrl }: Props) {
 
   const handleSearchColumn = (column: string) => {
     setSearchColumn(column);
-  }
+  };
   return (
     <main className="container mx-auto p-4">
       <div className="flex justtify-between items-center gap-4">
         <h1 className="text-2xl font-bold mb-4">Search</h1>
       </div>
-      <div className="mb-4">
+      <div className="mb-4 flex">
         <SearchBar onSearch={handleSearch} disabled={loading} />
+        <SelectBox
+          options={options}
+          value={searchColumn}
+          onChange={handleSelect}
+          />
       </div>
       {signedUrl ? (
         !loading ? (
