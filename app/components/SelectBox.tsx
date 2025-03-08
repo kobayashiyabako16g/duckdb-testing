@@ -3,7 +3,6 @@ import { useState } from "react";
 export interface Option {
   value: string;
   label: string;
-  defaultSelected?: boolean;
 }
 
 interface Props {

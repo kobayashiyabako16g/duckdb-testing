@@ -53,19 +53,19 @@ type Props = {
   signedUrl: string | undefined;
 };
 export function HeadApp({ signedUrl }: Props) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchColumn, setSearchColumn] = useState("id");
-  const [currentPage, setCurrentPage] = useState(0);
-
   const options: Option[] = [
-    { value: "id", label: "id", defaultSelected: true }, 
+    { value: "id", label: "id"}, 
     { value: "first_name", label: "first_name" },
     { value: "last_name", label: "last_name" },
     { value: "email", label: "email" },
     { value: "gender", label: "gender" },
     { value: "ip_address", label: "ip_address" },
   ];
-  
+  const [searchColumn, setSearchColumn] = useState("id");
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+
   const handleSelect = (value: string) => {
     handleSearchColumn(value);
   };
