@@ -13,28 +13,28 @@
     "lint": "biome lint ./app"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.797.0",
-    "@aws-sdk/s3-request-presigner": "^3.797.0",
+    "@aws-sdk/client-s3": "^3.946.0",
+    "@aws-sdk/s3-request-presigner": "^3.946.0",
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
-    "@react-router/node": "^7.5.2",
-    "@react-router/serve": "^7.5.2",
-    "isbot": "^5.1.27",
+    "@react-router/node": "^7.10.1",
+    "@react-router/serve": "^7.10.1",
+    "isbot": "^5.1.32",
     "lucide-react": "^0.503.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-router": "^7.5.2"
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "react-router": "^7.10.1"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@react-router/dev": "^7.5.2",
-    "@tailwindcss/vite": "^4.1.4",
-    "@types/node": "^22.15.2",
-    "@types/react": "^19.1.2",
-    "@types/react-dom": "^19.1.2",
+    "@react-router/dev": "^7.10.1",
+    "@tailwindcss/vite": "^4.1.17",
+    "@types/node": "^22.19.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "react-router-devtools": "^1.1.10",
-    "tailwindcss": "^4.1.4",
-    "typescript": "^5.8.3",
-    "vite": "^6.3.3",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.1",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
