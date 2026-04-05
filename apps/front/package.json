@@ -14,27 +14,25 @@
     "format:check": "oxfmt --check ."
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.946.0",
-    "@aws-sdk/s3-request-presigner": "^3.946.0",
+    "@aws-sdk/client-s3": "^3.1019.0",
+    "@aws-sdk/s3-request-presigner": "^3.1019.0",
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
-    "@react-router/node": "^7.10.1",
-    "@react-router/serve": "^7.10.1",
-    "isbot": "^5.1.32",
+    "@tanstack/react-router": "^1.168.8",
+    "@tanstack/react-router-devtools": "^1.166.11",
+    "isbot": "^5.1.36",
     "lucide-react": "^0.503.0",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
-    "react-router": "^7.10.1"
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@react-router/dev": "^7.10.1",
-    "@tailwindcss/vite": "^4.1.17",
-    "@types/node": "^22.19.1",
-    "@types/react": "^19.2.7",
+    "@tailwindcss/vite": "^4.2.2",
+    "@tanstack/router-plugin": "^1.167.9",
+    "@types/node": "^22.19.15",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "react-router-devtools": "^1.1.10",
-    "tailwindcss": "^4.1.17",
+    "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^6.4.1",
+    "vite": "^8.0.3",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }

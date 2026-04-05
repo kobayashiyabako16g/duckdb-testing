@@ -1,2 +1,5 @@
 packages:
   - apps/*
+
+# 7days: Type: number (minutes)
+minimumReleaseAge: 10080
