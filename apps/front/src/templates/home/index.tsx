@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link } from "@tanstack/react-router";
 
 export function HomeApp() {
   // 各ページのリンクと説明

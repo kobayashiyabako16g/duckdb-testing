@@ -1,15 +1,15 @@
-import { NavLink } from "react-router";
+import { Link } from "@tanstack/react-router";
 import ThemeToggle from "./ThemaToggle";
 
 export function Header() {
   return (
     <nav className="bg-slate-50 border-gray-200 py-2.5 dark:bg-gray-900">
       <div className="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
-        <NavLink to="/" className="flex items-center" end>
+        <Link to="/" className="flex items-center">
           <span className="self-center text-xl font-semibold whitespace-nowrap">
             DuckDB Testing
           </span>
-        </NavLink>
+        </Link>
         <div className="flex items-center lg:order-2">
           <div className="hidden mt-2 mr-4 sm:inline-block">
             <span />
@@ -60,29 +60,29 @@ export function Header() {
         >
           <ul className="flex flex-col mt-4 font-medium lg:flex-row lg:space-x-8 lg:mt-0">
             <li>
-              <NavLink
+              <Link
                 to="/"
                 className="block py-2 pl-3 pr-4 text-white bg-purple-700 rounded lg:bg-transparent lg:text-purple-700 lg:p-0 dark:text-white"
                 aria-current="page"
               >
                 Home
-              </NavLink>
+              </Link>
             </li>
             <li>
-              <NavLink
+              <Link
                 to="/csv"
                 className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
               >
                 csv
-              </NavLink>
+              </Link>
             </li>
             <li>
-              <NavLink
+              <Link
                 to="/csv/nohead"
                 className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
               >
                 nohead
-              </NavLink>
+              </Link>
             </li>
           </ul>
         </div>
