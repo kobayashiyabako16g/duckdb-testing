@@ -8,5 +8,6 @@ export const config = {
   cfTeamDomain: requireEnv('CF_ACCESS_TEAM_DOMAIN'),
   cfAud: requireEnv('CF_ACCESS_AUD'),
   dbPath: process.env['DB_PATH'] ?? './data/app.db',
-  port: Number(process.env['PORT'] ?? 3000),
+  port: Number(process.env['PORT'] ?? 8080),
+  gcsBucketName: requireEnv('GCS_BUCKET_NAME'),
 }

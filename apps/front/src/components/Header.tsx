@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "~/provider/auth";
 import ThemeToggle from "./ThemaToggle";
 
 export function Header() {
+  const { user, isLoading } = useAuth();
+
   return (
     <nav className="bg-slate-50 border-gray-200 py-2.5 dark:bg-gray-900">
       <div className="flex flex-wrap items-center justify-between max-w-screen-xl px-4 mx-auto">
@@ -10,10 +13,8 @@ export function Header() {
             DuckDB Testing
           </span>
         </Link>
-        <div className="flex items-center lg:order-2">
-          <div className="hidden mt-2 mr-4 sm:inline-block">
-            <span />
-          </div>
+        <div className="flex items-center gap-3 lg:order-2">
+          {!isLoading && user && <UserBadge email={user.email} name={user.name} />}
           <ThemeToggle />
           <button
             data-collapse-toggle="mobile-menu-2"
@@ -88,5 +89,20 @@ export function Header() {
         </div>
       </div>
     </nav>
+  );
+}
+
+function UserBadge({ email, name }: { email: string; name: string }) {
+  const initial = name.charAt(0).toUpperCase();
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-sm font-semibold"
+        title={email}
+      >
+        {initial}
+      </div>
+      <span className="hidden sm:block text-sm text-gray-700 dark:text-gray-300">{email}</span>
+    </div>
   );
 }

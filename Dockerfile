@@ -1,22 +1,35 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
-WORKDIR /app
-RUN npm ci
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
+# 依存関係インストール（package.json のみ先にコピーしてキャッシュを活用）
+FROM base AS deps
 WORKDIR /app
-RUN npm ci --omit=dev
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/api/package.json ./apps/api/
+RUN pnpm install --frozen-lockfile
 
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
+# ビルド
+FROM base AS build
 WORKDIR /app
-RUN npm run build
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
+COPY . .
+RUN pnpm --filter @apps/api build
 
-FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
+# プロダクション用依存関係のみを分離
+FROM base AS prod-deps
 WORKDIR /app
-CMD ["npm", "run", "start"]
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY apps/api/package.json ./apps/api/
+RUN pnpm --filter @apps/api deploy --prod /deploy/api
+
+# 最終イメージ
+FROM node:20-alpine AS runner
+WORKDIR /app
+# better-sqlite3 (ネイティブアドオン) に必要
+RUN apk add --no-cache libc6-compat
+COPY --from=prod-deps /deploy/api/node_modules ./node_modules
+COPY --from=build /app/apps/api/dist ./dist
+COPY --from=build /app/apps/api/package.json ./
+EXPOSE 8080
+CMD ["node", "dist/index.js"]

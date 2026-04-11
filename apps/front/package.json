@@ -13,8 +13,6 @@
     "format:check": "oxfmt --check ."
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1019.0",
-    "@aws-sdk/s3-request-presigner": "^3.1019.0",
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
     "@tanstack/react-router": "^1.168.8",
     "@tanstack/react-router-devtools": "^1.166.11",

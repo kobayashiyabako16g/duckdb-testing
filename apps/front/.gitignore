@@ -4,6 +4,8 @@ node_modules/
 
 # Vite
 config/env/.env
+dist/
+
 # Devenv
 .devenv*
 devenv.local.nix

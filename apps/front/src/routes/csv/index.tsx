@@ -1,21 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { GetS3SignedUr } from "~/loaders/s3";
-import { ACCESS_KEY_ID, BUCKET_NAME, SECRET_ACCESS_KEY } from "~/config/env";
+import { getGCSSignedUrl } from "~/loaders/gcs";
 import { HeadApp } from "~/templates/csv";
 
 const FILE_NAME = "mock_data.csv";
 
 export const Route = createFileRoute("/csv/")({
   loader: async () => {
-    const signedUrl = await GetS3SignedUr({
-      bucket: BUCKET_NAME,
-      key: FILE_NAME,
-      credentials: {
-        accessKeyId: ACCESS_KEY_ID,
-        secretAccessKey: SECRET_ACCESS_KEY,
-      },
-    });
+    const signedUrl = await getGCSSignedUrl(FILE_NAME);
     return { signedUrl };
   },
   component: Csv,

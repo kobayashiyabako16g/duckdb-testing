@@ -7,7 +7,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@aws-sdk/client-sts": "^3.1019.0",
+    "@google-cloud/storage": "^7.0.0",
     "@hono/node-server": "^1.19.11",
     "better-sqlite3": "^11.0.0",
     "hono": "^4.12.9",
