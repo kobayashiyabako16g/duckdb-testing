@@ -6,3 +6,7 @@ allowBuilds:
 
 # 7days: Type: number (minutes)
 minimumReleaseAge: 10080
+
+# minimumReleaseAgeExclude:
+#   - "hono"
+#   - "vite"
