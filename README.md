@@ -82,8 +82,8 @@ gs://{BUCKET_NAME}/tenant_id={tenant_id}/output.csv
 CF_ACCESS_TEAM_DOMAIN=your-team-name.cloudflareaccess.com
 CF_ACCESS_AUD=your-cloudflare-access-audience
 GCS_BUCKET_NAME=your-gcs-bucket-name
-DB_PATH=./data/app.db  # オプション (デフォルト: ./data/app.db)
-PORT=8080              # オプション (デフォルト: 8080)
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
+PORT=8080  # オプション (デフォルト: 8080)
 ```
 
 #### フロントエンド用
@@ -94,13 +94,29 @@ PORT=8080              # オプション (デフォルト: 8080)
 API_BASE_URL=http://localhost:8080
 ```
 
-### 6. SQLite DB の初期化
+### 6. DB のセットアップ
 
-API 初回起動時に自動でスキーマが作成されます。ユーザー・テナントデータは手動で投入してください。
+#### マイグレーションの適用
+
+```sh
+pnpm --filter @apps/api db:migrate
+```
+
+#### 初期データの投入
 
 ```sql
 INSERT INTO tenants (id, name) VALUES ('tenant-001', 'My Tenant');
 INSERT INTO users (id, tenant_id, email, role) VALUES ('user-001', 'tenant-001', 'you@example.com', 'viewer');
+```
+
+#### スキーマを変更した場合
+
+```sh
+# マイグレーションファイルを生成してコミット
+pnpm --filter @apps/api db:generate
+
+# 適用
+pnpm --filter @apps/api db:migrate
 ```
 
 > **ローカル実行の制約**: API の認証は Cloudflare Access の JWT に依存しているため、フロントエンド → API の完全なフローをローカルで実行するには Cloudflare Access の環境が必要です。API 単体のテストには `cf-access-jwt-assertion` ヘッダーを手動で付与してください。
@@ -152,7 +168,7 @@ pnpm build:api
 ### API
 
 - Hono
-- better-sqlite3 — ユーザー・テナント管理
+- Drizzle ORM + postgres.js — ユーザー・テナント管理 (PostgreSQL)
 - jose — Cloudflare Access JWT 検証
 - @google-cloud/storage — GCS 署名付き URL 生成
 
@@ -180,6 +196,7 @@ docker run -p 8080:8080 \
   -e CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com \
   -e CF_ACCESS_AUD=your-aud \
   -e GCS_BUCKET_NAME=your-bucket \
+  -e DATABASE_URL=postgres://user:password@host:5432/dbname \
   duckdb-testing-api
 ```
 

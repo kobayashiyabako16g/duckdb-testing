@@ -26,8 +26,6 @@ RUN pnpm --filter @apps/api deploy --prod /deploy/api
 # 最終イメージ
 FROM node:20-alpine AS runner
 WORKDIR /app
-# better-sqlite3 (ネイティブアドオン) に必要
-RUN apk add --no-cache libc6-compat
 COPY --from=prod-deps /deploy/api/node_modules ./node_modules
 COPY --from=build /app/apps/api/dist ./dist
 COPY --from=build /app/apps/api/package.json ./

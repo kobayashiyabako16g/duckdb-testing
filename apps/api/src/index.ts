@@ -33,8 +33,6 @@ app.get('/api/signed-url', async (c) => {
   }
 })
 
-await getRepository().initializeSchema()
-
 serve({
   fetch: app.fetch,
   port: config.port,
