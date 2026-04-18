@@ -1,3 +1,6 @@
+# drizzle
+drizzle/
+
 # dev
 .yarn/
 !.yarn/releases

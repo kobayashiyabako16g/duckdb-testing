@@ -9,6 +9,18 @@
       "cache": false,
       "persistent": true,
       "interactive": true
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:studio": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
     }
   }
 }

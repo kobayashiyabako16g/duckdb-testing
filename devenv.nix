@@ -33,6 +33,7 @@
 
    enterShell = ''
     hello
+    source <(pnpm completion zsh)
     git --version
     node --version
     pnpm --version
