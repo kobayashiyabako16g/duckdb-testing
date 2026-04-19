@@ -174,10 +174,11 @@ pnpm build:api
 
 ### インフラ
 
+- **Cloudflare Pages** — フロントエンド (SPA) ホスティング・CDN
+- **Cloudflare Access** — ユーザー認証 (Zero Trust)
 - **Cloud Run** — API ホスティング (ポート 8080)
 - **Cloud Storage (GCS)** — CSV/Parquet ファイルの格納
 - **Workload Identity** — Cloud Run から GCS へのキーレス認証
-- **Cloudflare Access** — ユーザー認証 (Zero Trust)
 
 ### Cloud Run デプロイ時の IAM 設定
 
@@ -187,6 +188,45 @@ Service Account に以下のロールを付与:
 | -------------------------------------- | ---------------------- |
 | `roles/storage.objectViewer`           | GCS バケットの読み取り |
 | `roles/iam.serviceAccountTokenCreator` | V4 署名付き URL の生成 |
+
+## Cloudflare Pages デプロイ (フロントエンド)
+
+Cloudflare Access と同一エコシステムで完結するため、フロントエンドのホスティングには **Cloudflare Pages** を使用します。
+
+### 1. プロジェクト作成
+
+Cloudflare ダッシュボード → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
+
+GitHub リポジトリを連携し、以下のビルド設定を入力:
+
+| 項目 | 値 |
+| ---- | -- |
+| Build command | `pnpm build:front` |
+| Build output directory | `apps/front/dist` |
+| Root directory | `/`（変更不要） |
+| Node.js version | `20` or `24` |
+
+### 2. 環境変数の設定
+
+Pages プロジェクトの **Settings → Environment variables** で設定:
+
+```
+VITE_API_BASE_URL = https://api.your-domain.com   # Cloud Run の URL
+```
+
+> Vite の環境変数は `VITE_` プレフィックスが必要です。`apps/front/config/env/.env` の `API_BASE_URL` は本番では `VITE_API_BASE_URL` として設定してください。
+
+### 3. Cloudflare Access との紐付け
+
+**Zero Trust ダッシュボード** → **Access** → **Applications** → **Add an application** → **Cloudflare Pages** を選択し、作成した Pages プロジェクトを指定します。
+
+これにより、フロントエンドへのアクセスは Cloudflare Access で保護され、認証済みユーザーのみが利用できます。
+
+### 4. カスタムドメイン（オプション）
+
+Pages プロジェクトの **Custom domains** から独自ドメインを割り当て可能です。DNS は Cloudflare が自動設定します。
+
+---
 
 ## Docker
 
