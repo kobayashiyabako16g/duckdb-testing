@@ -11,6 +11,7 @@
     "db:migrate": "dotenvx run -- turbo run db:migrate --filter=@apps/api... --ui=tui",
     "db:studio": "dotenvx run -- turbo run db:studio --filter=@apps/api... --ui=tui",
     "db:push": "dotenvx run -- turbo run db:push --filter=@apps/api... --ui=tui",
+    "db:seed": "dotenvx run -- turbo run db:seed --filter=@apps/api... --ui=tui",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",

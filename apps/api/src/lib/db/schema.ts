@@ -16,7 +16,7 @@ export const users = pgTable(
       .default(sql`uuidv7()`)
       .primaryKey()
       .notNull(),
-    tenantId: uuid().notNull(),
+    tenantId: uuid(`tenant_id`).notNull(),
     email: text("email").notNull().unique(),
     role: text("role").default("viewer"),
   },
