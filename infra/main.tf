@@ -1,10 +1,14 @@
 terraform {
-  required_version = ">= 1.5"
+  required_version = ">= 1.14"
 
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 6.0"
+      version = "~> 7.30.0"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.19.1"
     }
   }
 
@@ -18,4 +22,8 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
+}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
 }

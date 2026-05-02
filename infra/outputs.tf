@@ -12,3 +12,13 @@ output "service_account_email" {
   description = "Cloud Run が使用する Service Account のメールアドレス"
   value       = google_service_account.api.email
 }
+
+output "app_url" {
+  description = "アプリケーションの URL (Cloudflare Access 経由)"
+  value       = "https://${var.app_domain}"
+}
+
+output "cf_access_aud" {
+  description = "Cloudflare Access Application の AUD タグ (API の CF_ACCESS_AUD に使用)"
+  value       = cloudflare_zero_trust_access_application.front.aud
+}

@@ -20,12 +20,6 @@ variable "cf_access_team_domain" {
   type        = string
 }
 
-variable "cf_access_aud" {
-  description = "Cloudflare Access Audience (Application Audience Tag)"
-  type        = string
-  sensitive   = true
-}
-
 variable "gcs_bucket_name" {
   description = "CSV/Parquet ファイルを格納する GCS バケット名"
   type        = string
@@ -53,4 +47,27 @@ variable "cloud_run_max_instances" {
   description = "Cloud Run の最大インスタンス数"
   type        = number
   default     = 10
+}
+
+# ── Cloudflare ──────────────────────────────────────────────
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API トークン (Pages・Access・DNS 編集権限が必要)"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_account_id" {
+  description = "Cloudflare アカウント ID"
+  type        = string
+}
+
+variable "app_domain" {
+  description = "Cloudflare Access で保護するカスタムドメイン (例: app.your-domain.com)。Cloudflare DNS でプロキシ有効が必要"
+  type        = string
+}
+
+variable "cloudflare_allowed_email_domains" {
+  description = "Cloudflare Access でアクセスを許可するメールドメインのリスト"
+  type        = list(string)
 }

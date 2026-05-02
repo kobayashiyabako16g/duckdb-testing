@@ -1,13 +1,25 @@
-project_id            = "your-gcp-project-id"
-region                = "asia-northeast1"
-image_tag             = "latest"
+# ── GCP ─────────────────────────────────────────────────────
+project_id = "your-gcp-project-id"
+region     = "asia-northeast1"
+image_tag  = "latest"
 
-cf_access_team_domain = "your-team.cloudflareaccess.com"
-cf_access_aud         = "your-cloudflare-access-audience-tag"
-
-gcs_bucket_name       = "your-gcs-bucket-name"
-database_url          = "postgres://user:password@host:5432/dbname"
+gcs_bucket_name = "your-gcs-bucket-name"
+database_url    = "postgres://user:password@host:5432/dbname"
 
 allow_unauthenticated   = true
 cloud_run_min_instances = 0
 cloud_run_max_instances = 10
+
+# ── Cloudflare Access (API JWT 検証用) ────────────────────────
+# cf_access_aud は Terraform が cloudflare_zero_trust_access_application から自動取得するため不要
+cf_access_team_domain = "your-team.cloudflareaccess.com"
+
+# ── Cloudflare (Access) ──────────────────────────────────────
+cloudflare_api_token  = "your-cloudflare-api-token"
+cloudflare_account_id = "your-cloudflare-account-id"
+
+# Cloudflare DNS でプロキシ有効（orange-cloud）のカスタムドメイン
+# Cloud Run Domain Mapping の設定も別途必要 (README 参照)
+app_domain = "app.your-domain.com"
+
+cloudflare_allowed_email_domains = ["your-company.com"]

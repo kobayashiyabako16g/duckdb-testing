@@ -63,9 +63,9 @@ resource "google_cloud_run_v2_service" "api" {
       }
     }
   }
-
-  depends_on = [
-    google_secret_manager_secret_version.cf_access_aud,
-    google_secret_manager_secret_version.database_url,
-  ]
+  # depends_on でシークレットバージョンを指定しない。
+  # secret_key_ref はシークレットリソース名のみ参照するため、バージョンの作成順序を強制すると
+  # cloudflare_pages_project → cloud_run → secret_version → access_app → pages という循環依存になる。
+  # Terraform apply 内でシークレットバージョンは後から作成されるが、Cloud Run は起動時に
+  # version = "latest" を動的に解決するため運用上の問題はない。
 }
