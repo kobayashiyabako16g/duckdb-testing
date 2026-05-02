@@ -189,6 +189,245 @@ Service Account に以下のロールを付与:
 | `roles/storage.objectViewer`           | GCS バケットの読み取り |
 | `roles/iam.serviceAccountTokenCreator` | V4 署名付き URL の生成 |
 
+## Cloud Run デプロイ (API)
+
+### 前提条件
+
+- Google Cloud SDK (`gcloud`) がインストール済みで、対象プロジェクトにログイン済み
+- Docker がインストール済み
+- `GOOGLE_CLOUD_PROJECT` に GCP プロジェクト ID が設定済み
+
+```sh
+gcloud auth login
+gcloud config set project YOUR_PROJECT_ID
+```
+
+### 1. Artifact Registry の準備
+
+Docker イメージの保存先として Artifact Registry リポジトリを作成します。
+
+```sh
+gcloud artifacts repositories create duckdb-testing \
+  --repository-format=docker \
+  --location=asia-northeast1 \
+  --description="duckdb-testing API images"
+```
+
+Docker 認証の設定:
+
+```sh
+gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+```
+
+### 2. Docker イメージのビルドとプッシュ
+
+```sh
+IMAGE="asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/duckdb-testing/api"
+
+docker build -t "${IMAGE}:latest" .
+docker push "${IMAGE}:latest"
+```
+
+### 3. Service Account の作成
+
+```sh
+gcloud iam service-accounts create duckdb-testing-api \
+  --display-name="duckdb-testing API Service Account"
+```
+
+以下のロールを付与します（「Cloud Run デプロイ時の IAM 設定」を参照）:
+
+```sh
+SA="duckdb-testing-api@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+
+# GCS バケットの読み取り
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+  --member="serviceAccount:${SA}" \
+  --role="roles/storage.objectViewer"
+
+# V4 署名付き URL の生成
+gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+  --member="serviceAccount:${SA}" \
+  --role="roles/iam.serviceAccountTokenCreator"
+```
+
+### 4. Cloud Run へのデプロイ
+
+```sh
+SA="duckdb-testing-api@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+IMAGE="asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/duckdb-testing/api:latest"
+
+gcloud run deploy duckdb-testing-api \
+  --image="${IMAGE}" \
+  --region=asia-northeast1 \
+  --platform=managed \
+  --service-account="${SA}" \
+  --port=8080 \
+  --set-env-vars="CF_ACCESS_TEAM_DOMAIN=your-team.cloudflareaccess.com" \
+  --set-env-vars="CF_ACCESS_AUD=your-aud" \
+  --set-env-vars="GCS_BUCKET_NAME=your-bucket" \
+  --set-env-vars="DATABASE_URL=postgres://user:password@host:5432/dbname" \
+  --no-allow-unauthenticated
+```
+
+> `--no-allow-unauthenticated` により、Cloud Run の認証レイヤーも有効にできます。Cloudflare Access のみで保護する場合は `--allow-unauthenticated` に変更してください。
+
+デプロイ後、表示される Service URL が API のエンドポイントになります。
+
+### 5. 環境変数の更新
+
+デプロイ後に環境変数を追加・変更する場合:
+
+```sh
+gcloud run services update duckdb-testing-api \
+  --region=asia-northeast1 \
+  --set-env-vars="KEY=VALUE"
+```
+
+Secret Manager を使う場合 (推奨):
+
+```sh
+# Secret を作成
+echo -n "your-database-url" | gcloud secrets create DATABASE_URL --data-file=-
+
+# Cloud Run サービスに紐付け
+gcloud run services update duckdb-testing-api \
+  --region=asia-northeast1 \
+  --set-secrets="DATABASE_URL=DATABASE_URL:latest"
+
+# Service Account に Secret へのアクセス権を付与
+gcloud secrets add-iam-policy-binding DATABASE_URL \
+  --member="serviceAccount:${SA}" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+### 6. DB マイグレーション
+
+Cloud Run はリクエスト駆動のため、マイグレーションはデプロイとは別に実行します。
+
+#### ローカルから直接実行 (Cloud SQL Proxy 経由)
+
+Cloud SQL を使用している場合:
+
+```sh
+# Cloud SQL Auth Proxy を起動
+cloud-sql-proxy YOUR_PROJECT_ID:asia-northeast1:YOUR_INSTANCE &
+
+# マイグレーション実行
+DATABASE_URL=postgres://user:password@localhost:5432/dbname \
+  pnpm --filter @apps/api db:migrate
+```
+
+#### Cloud Run Jobs を使う場合
+
+```sh
+gcloud run jobs create db-migrate \
+  --image="${IMAGE}" \
+  --region=asia-northeast1 \
+  --service-account="${SA}" \
+  --set-env-vars="DATABASE_URL=postgres://..." \
+  --command="node" \
+  --args="dist/migrate.js"
+
+# 実行
+gcloud run jobs execute db-migrate --region=asia-northeast1
+```
+
+### 7. カスタムドメイン (オプション)
+
+```sh
+gcloud run domain-mappings create \
+  --service=duckdb-testing-api \
+  --domain=api.your-domain.com \
+  --region=asia-northeast1
+```
+
+DNS の TXT/CNAME レコードを指示に従って設定してください。
+
+### Terraform を使う場合
+
+`gcloud` コマンドによる手動デプロイの代わりに、`infra/` ディレクトリの Terraform 構成を使用できます。
+
+#### ファイル構成
+
+```
+infra/
+├── main.tf                    # Provider・バックエンド設定
+├── variables.tf               # 入力変数
+├── outputs.tf                 # 出力値 (URL など)
+├── artifact_registry.tf       # Artifact Registry リポジトリ
+├── iam.tf                     # Service Account・IAM バインディング
+├── secrets.tf                 # Secret Manager (機密環境変数)
+├── cloud_run.tf               # Cloud Run サービス
+└── terraform.tfvars.example   # 変数ファイルのサンプル
+```
+
+#### 手順
+
+**1. 変数ファイルの作成**
+
+```sh
+cd infra
+cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars を編集して実際の値を設定
+```
+
+**2. 初期化**
+
+```sh
+terraform init
+```
+
+GCS をリモートバックエンドにする場合は `main.tf` の `backend "gcs"` ブロックのコメントを外してから実行してください。
+
+**3. Docker イメージのビルドとプッシュ**
+
+Terraform でインフラを作成した後、イメージをプッシュします。
+
+```sh
+# Terraform apply でリポジトリを作成
+terraform apply -target=google_artifact_registry_repository.api
+
+# Docker 認証
+gcloud auth configure-docker asia-northeast1-docker.pkg.dev
+
+# イメージのビルドとプッシュ (プロジェクトルートで実行)
+cd ..
+IMAGE=$(cd infra && terraform output -raw artifact_registry_repo)
+docker build -t "${IMAGE}:latest" .
+docker push "${IMAGE}:latest"
+```
+
+**4. インフラ全体のデプロイ**
+
+```sh
+cd infra
+terraform apply
+```
+
+完了後、Cloud Run の URL が出力されます:
+
+```
+Outputs:
+cloud_run_url           = "https://duckdb-testing-api-xxxxxxxxxx-an.a.run.app"
+artifact_registry_repo  = "asia-northeast1-docker.pkg.dev/YOUR_PROJECT_ID/duckdb-testing/api"
+service_account_email   = "duckdb-testing-api@YOUR_PROJECT_ID.iam.gserviceaccount.com"
+```
+
+**5. イメージ更新時の再デプロイ**
+
+```sh
+docker build -t "${IMAGE}:latest" .
+docker push "${IMAGE}:latest"
+
+cd infra
+terraform apply -var="image_tag=latest"
+```
+
+> タグを `latest` ではなく Git SHA などに固定すると、同じタグで push しても Cloud Run の revision が更新されないことがあります。その場合は `-var="image_tag=$(git rev-parse --short HEAD)"` のように一意なタグを使用してください。
+
+---
+
 ## Cloudflare Pages デプロイ (フロントエンド)
 
 Cloudflare Access と同一エコシステムで完結するため、フロントエンドのホスティングには **Cloudflare Pages** を使用します。
