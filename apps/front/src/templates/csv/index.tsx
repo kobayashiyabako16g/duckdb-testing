@@ -6,18 +6,13 @@ import SearchBar from "~/components/SearchBar";
 import { useDuckDB } from "~/hooks/duckdb";
 import { SelectBox, type Option } from "~/components/SelectBox";
 
-const getRequetBuffer = async (
-  PARQUET_FILE_URL: string,
-): Promise<ArrayBuffer> => {
+const getRequetBuffer = async (PARQUET_FILE_URL: string): Promise<ArrayBuffer> => {
   const response = await fetch(PARQUET_FILE_URL);
   return response.arrayBuffer();
 };
 const TABLE_NAME = "csv_table";
 const FILE_NAME = "mock_data.csv";
-const readBuffer = async (
-  db: AsyncDuckDB,
-  buffer: ArrayBuffer,
-): Promise<void> => {
+const readBuffer = async (db: AsyncDuckDB, buffer: ArrayBuffer): Promise<void> => {
   await db.registerFileBuffer(`${FILE_NAME}`, new Uint8Array(buffer));
   const conn = await db.connect();
   try {
@@ -48,13 +43,12 @@ const readBuffer = async (
   }
 };
 
-
 type Props = {
   signedUrl: string | undefined;
 };
 export function HeadApp({ signedUrl }: Props) {
   const options: Option[] = [
-    { value: "id", label: "id"}, 
+    { value: "id", label: "id" },
     { value: "first_name", label: "first_name" },
     { value: "last_name", label: "last_name" },
     { value: "email", label: "email" },
@@ -122,11 +116,7 @@ export function HeadApp({ signedUrl }: Props) {
       </div>
       <div className="mb-4 flex">
         <SearchBar onSearch={handleSearch} disabled={loading} />
-        <SelectBox
-          options={options}
-          value={searchColumn}
-          onChange={handleSelect}
-          />
+        <SelectBox options={options} value={searchColumn} onChange={handleSelect} />
       </div>
       {signedUrl ? (
         !loading ? (

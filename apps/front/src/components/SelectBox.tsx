@@ -13,13 +13,7 @@ interface Props {
   className?: string;
 }
 
-export function SelectBox({
-  label,
-  options,
-  value,
-  onChange,
-  className = "",
-}: Props) {
+export function SelectBox({ label, options, value, onChange, className = "" }: Props) {
   return (
     <div className={`${className}`}>
       {label && (

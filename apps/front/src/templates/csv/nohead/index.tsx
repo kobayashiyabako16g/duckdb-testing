@@ -7,16 +7,11 @@ import { useDuckDB } from "~/hooks/duckdb";
 
 const TABLE_NAME = "my_table";
 const FILE_NAME = "ouput.csv";
-const getRequetBuffer = async (
-  PARQUET_FILE_URL: string,
-): Promise<ArrayBuffer> => {
+const getRequetBuffer = async (PARQUET_FILE_URL: string): Promise<ArrayBuffer> => {
   const response = await fetch(PARQUET_FILE_URL);
   return response.arrayBuffer();
 };
-const readBuffer = async (
-  db: AsyncDuckDB,
-  buffer: ArrayBuffer,
-): Promise<void> => {
+const readBuffer = async (db: AsyncDuckDB, buffer: ArrayBuffer): Promise<void> => {
   await db.registerFileBuffer(`${FILE_NAME}`, new Uint8Array(buffer));
   const conn = await db.connect();
   try {

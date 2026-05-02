@@ -12,10 +12,7 @@ export const Route = createFileRoute("/csv/")({
   },
   component: Csv,
   head: () => ({
-    meta: [
-      { title: "CSV Viewer" },
-      { name: "description", content: "CSV Viewer with DuckDB" },
-    ],
+    meta: [{ title: "CSV Viewer" }, { name: "description", content: "CSV Viewer with DuckDB" }],
   }),
 });
 

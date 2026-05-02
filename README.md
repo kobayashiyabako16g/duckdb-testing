@@ -352,17 +352,17 @@ DNS の TXT/CNAME レコードを指示に従って設定してください。
 
 #### 管理対象リソース
 
-| ファイル | リソース |
-| -------- | -------- |
-| `main.tf` | Provider (google, cloudflare)・バックエンド設定 |
-| `variables.tf` | 入力変数 |
-| `outputs.tf` | 出力値 (URL・AUD など) |
-| `artifact_registry.tf` | Artifact Registry リポジトリ |
-| `iam.tf` | Service Account・IAM バインディング |
-| `secrets.tf` | Secret Manager (DATABASE_URL, CF_ACCESS_AUD) |
-| `cloud_run.tf` | Cloud Run サービス |
-| `cloudflare_access.tf` | Cloudflare Access Application + Policy |
-| `terraform.tfvars.example` | 変数ファイルのサンプル |
+| ファイル                   | リソース                                        |
+| -------------------------- | ----------------------------------------------- |
+| `main.tf`                  | Provider (google, cloudflare)・バックエンド設定 |
+| `variables.tf`             | 入力変数                                        |
+| `outputs.tf`               | 出力値 (URL・AUD など)                          |
+| `artifact_registry.tf`     | Artifact Registry リポジトリ                    |
+| `iam.tf`                   | Service Account・IAM バインディング             |
+| `secrets.tf`               | Secret Manager (DATABASE_URL, CF_ACCESS_AUD)    |
+| `cloud_run.tf`             | Cloud Run サービス                              |
+| `cloudflare_access.tf`     | Cloudflare Access Application + Policy          |
+| `terraform.tfvars.example` | 変数ファイルのサンプル                          |
 
 #### 値の自動連携
 
@@ -474,10 +474,10 @@ gcloud run domain-mappings create \
 
 Cloudflare ダッシュボード → **DNS** で以下を追加:
 
-| Type | Name | Content | Proxy |
-| ---- | ---- | ------- | ----- |
-| TXT | `app` | （gcloud が表示した検証レコード） | DNS only |
-| CNAME | `app` | `ghs.googlehosted.com` | Proxied (orange) |
+| Type  | Name  | Content                           | Proxy            |
+| ----- | ----- | --------------------------------- | ---------------- |
+| TXT   | `app` | （gcloud が表示した検証レコード） | DNS only         |
+| CNAME | `app` | `ghs.googlehosted.com`            | Proxied (orange) |
 
 ### 3. Cloudflare Access Application の設定（Terraform）
 

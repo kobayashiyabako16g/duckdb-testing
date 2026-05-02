@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       tanstackRouter({
-        target: 'react',
-        autoCodeSplitting: true
+        target: "react",
+        autoCodeSplitting: true,
       }),
       tailwindcss(),
     ],
