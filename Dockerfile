@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
 # 依存関係インストール（package.json のみ先にコピーしてキャッシュを活用）
@@ -24,7 +24,7 @@ COPY apps/api/package.json ./apps/api/
 RUN pnpm --filter @apps/api deploy --prod /deploy/api
 
 # 最終イメージ
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 COPY --from=prod-deps /deploy/api/node_modules ./node_modules
 COPY --from=build /app/apps/api/dist ./dist
