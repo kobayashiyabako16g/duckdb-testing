@@ -55,6 +55,18 @@ resource "google_compute_url_map" "main" {
     name            = "main"
     default_service = google_compute_backend_bucket.frontend.self_link
 
+    # SPA フォールバック: GCS に存在しないパスは index.html を 200 で返す
+    # Cloud LB のバックエンドバケットは GCS ウェブサイトエンドポイントを経由しないため
+    # website.not_found_page は機能しない。custom_error_response_policy で代替する。
+    default_custom_error_response_policy {
+      error_response_rule {
+        match_response_codes   = ["404"]
+        path                   = "/index.html"
+        override_response_code = 200
+      }
+      error_service = google_compute_backend_bucket.frontend.self_link
+    }
+
     # /api/* → Cloud Run
     route_rules {
       priority = 1
@@ -71,29 +83,6 @@ resource "google_compute_url_map" "main" {
         full_path_match = "/api"
       }
       service = google_compute_backend_service.api.self_link
-    }
-
-    # /assets/* → GCS (ハッシュ付き静的ファイル、リライトなし)
-    route_rules {
-      priority = 10
-      match_rules {
-        prefix_match = "/assets/"
-      }
-      service = google_compute_backend_bucket.frontend.self_link
-    }
-
-    # SPA フォールバック: 上記以外はすべて /index.html にリライト
-    route_rules {
-      priority = 100
-      match_rules {
-        prefix_match = "/"
-      }
-      service = google_compute_backend_bucket.frontend.self_link
-      route_action {
-        url_rewrite {
-          path_full_rewrite = "/index.html"
-        }
-      }
     }
   }
 }
