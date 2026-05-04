@@ -168,11 +168,11 @@ pnpm dev:front
 
 ブラウザで `http://localhost:5173` を開くと SPA が表示され、`/api/*` へのリクエストは `http://localhost:8080` へクロスオリジンで転送されます。
 
-| サービス       | URL                       |
-| -------------- | ------------------------- |
-| フロントエンド | http://localhost:5173     |
-| API            | http://localhost:8080     |
-| GCS エミュレータ | http://localhost:1324   |
+| サービス         | URL                   |
+| ---------------- | --------------------- |
+| フロントエンド   | http://localhost:5173 |
+| API              | http://localhost:8080 |
+| GCS エミュレータ | http://localhost:1324 |
 
 ### フロントエンド単体
 
@@ -494,9 +494,9 @@ service_account_email  = "duckdb-testing-api@YOUR_PROJECT_ID.iam.gserviceaccount
 
 Cloudflare ダッシュボード → **DNS** で `app_domain` の A レコードを LB の IP に向けます:
 
-| Type | Name  | Content                   | Proxy            |
-| ---- | ----- | ------------------------- | ---------------- |
-| A    | `app` | `load_balancer_ip` の値   | Proxied (orange) |
+| Type | Name  | Content                 | Proxy            |
+| ---- | ----- | ----------------------- | ---------------- |
+| A    | `app` | `load_balancer_ip` の値 | Proxied (orange) |
 
 > マネージド SSL 証明書は DNS が反映されてから自動でプロビジョニングされます（10〜15 分）。
 
