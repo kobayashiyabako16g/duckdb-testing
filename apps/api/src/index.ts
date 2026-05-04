@@ -1,5 +1,4 @@
 import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { config } from "./lib/config.js";
@@ -14,9 +13,6 @@ const app = new Hono<{ Variables: AuthVariables }>();
 if (config.isDev) {
   app.use("*", cors({ origin: "http://localhost:5173" }));
 }
-
-// 静的アセット (ハッシュ付きファイル群)
-app.use("/assets/*", serveStatic({ root: "./public" }));
 
 // API ルート
 app.use("/api/*", cfAccessAuth);
@@ -42,9 +38,6 @@ app.get("/api/signed-url", async (c) => {
     return c.json({ error: "Failed to generate signed URL" }, 500);
   }
 });
-
-// SPA フォールバック: クライアントサイドルーティング用に index.html を返す
-app.get("/*", serveStatic({ path: "./public/index.html" }));
 
 serve(
   {

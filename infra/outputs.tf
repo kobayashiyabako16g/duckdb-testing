@@ -22,3 +22,13 @@ output "cf_access_aud" {
   description = "Cloudflare Access Application の AUD タグ (API の CF_ACCESS_AUD に使用)"
   value       = cloudflare_zero_trust_access_application.front.aud
 }
+
+output "load_balancer_ip" {
+  description = "Cloud Load Balancer の静的 IP (Cloudflare DNS の A レコードに設定)"
+  value       = google_compute_global_address.frontend.address
+}
+
+output "frontend_bucket_name" {
+  description = "フロントエンド静的ファイルをデプロイする GCS バケット名"
+  value       = google_storage_bucket.frontend.name
+}
