@@ -14,19 +14,19 @@
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "1.29.1-dev132.0",
-    "@tanstack/react-router": "^1.168.8",
-    "@tanstack/react-router-devtools": "^1.166.11",
+    "@tanstack/react-router": "^1.168.24",
+    "@tanstack/react-router-devtools": "^1.166.13",
     "lucide-react": "^0.503.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@tanstack/router-plugin": "^1.167.9",
-    "@types/node": "^22.19.15",
+    "@tailwindcss/vite": "^4.2.4",
+    "@tanstack/router-plugin": "^1.167.27",
+    "@types/node": "^22.19.17",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3",
     "vite": "8.0.5"
   }

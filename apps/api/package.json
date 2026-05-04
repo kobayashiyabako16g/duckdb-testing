@@ -12,20 +12,20 @@
     "db:seed": "tsx src/lib/db/seed.ts"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.0.0",
-    "@hono/node-server": "^1.19.11",
+    "@google-cloud/storage": "^7.19.0",
+    "@hono/node-server": "^2.0.0",
     "drizzle-orm": "^0.45.2",
     "drizzle-seed": "^0.3.1",
-    "hono": "4.12.12",
-    "jose": "^6.0.0",
-    "postgres": "^3.4.8",
-    "uuid": "^13.0.0"
+    "hono": "^4.12.15",
+    "jose": "^6.2.2",
+    "postgres": "^3.4.9",
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
+    "@types/node": "^20.19.39",
     "@types/uuid": "^11.0.0",
     "drizzle-kit": "^0.31.10",
-    "tsx": "^4.7.1",
-    "typescript": "^5.8.3"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }
