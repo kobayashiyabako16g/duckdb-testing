@@ -12,10 +12,14 @@ function getCFAuthToken(): string | null {
 }
 
 export async function getGCSSignedUrl(fileName: string): Promise<string | undefined> {
-  const token = getCFAuthToken();
+  // ローカル開発: CF cookie がなくても API を呼び出す (API 側が DEV_USER_EMAIL で認証)
+  const isDev = import.meta.env.VITE_DEV_MODE === "true";
+  const token = getCFAuthToken() ?? (isDev ? "dev" : null);
   if (!token) return undefined;
 
-  const url = new URL("/api/signed-url", API_BASE_URL);
+  // API_BASE_URL が空の場合は現在のオリジンを使用 (Cloud Run での同一オリジン構成)
+  const base = API_BASE_URL || window.location.origin;
+  const url = new URL("/api/signed-url", base);
   url.searchParams.set("file", fileName);
 
   try {

@@ -81,12 +81,17 @@ gs://{BUCKET_NAME}/tenant_id={tenant_id}/output.csv
 ルートの `.env` ファイルを作成:
 
 ```env
-CF_ACCESS_TEAM_DOMAIN=your-team-name.cloudflareaccess.com
-CF_ACCESS_AUD=your-cloudflare-access-audience
+APP_ENV=development
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/app
 GCS_BUCKET_NAME=your-gcs-bucket-name
-DATABASE_URL=postgres://user:password@localhost:5432/dbname
-PORT=8080  # オプション (デフォルト: 8080)
+DEV_USER_EMAIL=dev@example.com   # db:seed で作成したユーザーのメールアドレス
+
+# APP_ENV=development の場合は不要
+# CF_ACCESS_TEAM_DOMAIN=your-team-name.cloudflareaccess.com
+# CF_ACCESS_AUD=your-cloudflare-access-audience
 ```
+
+> `APP_ENV=development` を設定すると、Cloudflare Access の JWT 検証をスキップして `DEV_USER_EMAIL` のユーザーで認証をバイパスします。
 
 #### フロントエンド用
 
@@ -94,7 +99,10 @@ PORT=8080  # オプション (デフォルト: 8080)
 
 ```env
 API_BASE_URL=http://localhost:8080
+VITE_DEV_MODE=true
 ```
+
+> `VITE_DEV_MODE=true` を設定すると、CF_Authorization cookie がない場合でも API 呼び出しを行います。
 
 ### 6. DB のセットアップ
 
@@ -106,9 +114,15 @@ pnpm --filter @apps/api db:migrate
 
 #### 初期データの投入
 
+```sh
+pnpm db:seed
+```
+
+または手動で:
+
 ```sql
 INSERT INTO tenants (id, name) VALUES ('tenant-001', 'My Tenant');
-INSERT INTO users (id, tenant_id, email, role) VALUES ('user-001', 'tenant-001', 'you@example.com', 'viewer');
+INSERT INTO users (id, tenant_id, email, role) VALUES ('user-001', 'tenant-001', 'dev@example.com', 'viewer');
 ```
 
 #### スキーマを変更した場合
@@ -121,11 +135,22 @@ pnpm --filter @apps/api db:generate
 pnpm --filter @apps/api db:migrate
 ```
 
-> **ローカル実行の制約**: API の認証は Cloudflare Access の JWT に依存しているため、フロントエンド → API の完全なフローをローカルで実行するには Cloudflare Access の環境が必要です。API 単体のテストには `cf-access-jwt-assertion` ヘッダーを手動で付与してください。
-
 ## 開発サーバーの起動
 
-### フロントエンド
+```sh
+# PostgreSQL を起動
+docker compose up -d
+
+# ターミナル 1: API (ポート 8080)
+pnpm dev:api
+
+# ターミナル 2: フロントエンド (ポート 5173)
+pnpm dev:front
+```
+
+ブラウザで `http://localhost:5173` を開くと SPA が表示され、`/api/*` へのリクエストは `http://localhost:8080` へクロスオリジンで転送されます。
+
+### フロントエンド単体
 
 ```sh
 pnpm dev:front

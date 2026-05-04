@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { config } from "./lib/config.js";
 import { getRepository } from "./lib/db/index.js";
 import { cfAccessAuth } from "./middleware/auth.js";
@@ -8,6 +9,11 @@ import { generateSignedUrl } from "./lib/gcs.js";
 import type { AuthVariables } from "./types.js";
 
 const app = new Hono<{ Variables: AuthVariables }>();
+
+// ローカル開発時: Vite dev server (別ポート) からのリクエストを許可
+if (config.isDev) {
+  app.use("*", cors({ origin: "http://localhost:5173" }));
+}
 
 // 静的アセット (ハッシュ付きファイル群)
 app.use("/assets/*", serveStatic({ root: "./public" }));
