@@ -28,12 +28,11 @@ services:
       retries: 5
       start_period: 5s
 
-  gcs-emulator:
-    image: google/cloud-sdk:emulators
-    container_name: gcs-emulator
+  fake-gcs-server:
+    image: fsouza/fake-gcs-server
+    container_name: fake-gcs-server
     ports:
-      - "1324:1324"
+      - "4443:4443"
     volumes:
-      - ./gcs_data:/data # データを永続化する場合
-    # 0.0.0.0でバインドし、データを保存するディレクトリを指定
-    command: gcloud emulators storage start --address=0.0.0.0 --port=1324 --data-dir=/data
+      - ./gcs_data:/data
+    command: -scheme http -port 4443 -external-url "http://localhost:4443" -data /data
