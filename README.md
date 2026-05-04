@@ -55,37 +55,53 @@ devenv shell
 pnpm install
 ```
 
-### 3. GCS 認証のセットアップ
+### 3. GCS エミュレータのセットアップ
 
-ローカル開発では Application Default Credentials (ADC) を使用します。
+ローカル開発では `docker compose` に含まれる GCS エミュレータを使用します。ADC や実際の GCS バケットは不要です。
 
 ```sh
-gcloud auth application-default login
+# docker compose up -d で gcs-emulator も起動します (後述のステップ 7 で実行)
 ```
 
-### 4. GCS バケットの準備
+#### バケットの作成
 
-GCS バケットを作成し、CSV/Parquet ファイルをアップロードします。
+エミュレータ起動後、バケットを作成します:
+
+```sh
+curl -s -X POST "http://localhost:1324/storage/v1/b?project=local-dev" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"local-bucket"}' | jq .name
+```
+
+#### テストファイルのアップロード
 
 オブジェクトのパス構造:
 
 ```
-gs://{BUCKET_NAME}/tenant_id={tenant_id}/mock_data.csv
-gs://{BUCKET_NAME}/tenant_id={tenant_id}/output.csv
+local-bucket/tenant_id={tenant_id}/mock_data.csv
+local-bucket/tenant_id={tenant_id}/output.csv
 ```
 
-ローカル実行時はバケットへの読み取り権限が ADC に付与されている必要があります。
+```sh
+curl -s -X POST \
+  "http://localhost:1324/upload/storage/v1/b/local-bucket/o?uploadType=media&name=tenant_id%3Dtenant-001%2Fmock_data.csv" \
+  -H "Content-Type: text/csv" \
+  --data-binary @./path/to/mock_data.csv
+```
 
-### 5. 環境変数の設定
+> `GCS_EMULATOR_HOST` が設定されている場合、API は署名付き URL の代わりにエミュレータへの直接 URL を返します。
+
+### 4. 環境変数の設定
 
 #### API 用
 
-ルートの `.env` ファイルを作成:
+ルートの `.env` ファイルを作成（`.env` はすでにデフォルト値が入っています）:
 
 ```env
 APP_ENV=development
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/app
-GCS_BUCKET_NAME=your-gcs-bucket-name
+GCS_BUCKET_NAME=local-bucket
+GCS_EMULATOR_HOST=http://localhost:1324
 DEV_USER_EMAIL=dev@example.com   # db:seed で作成したユーザーのメールアドレス
 
 # APP_ENV=development の場合は不要
@@ -106,7 +122,7 @@ VITE_DEV_MODE=true
 
 > `VITE_DEV_MODE=true` を設定すると、CF_Authorization cookie がない場合でも API 呼び出しを行います。
 
-### 6. DB のセットアップ
+### 5. DB のセットアップ
 
 #### マイグレーションの適用
 
@@ -140,7 +156,7 @@ pnpm --filter @apps/api db:migrate
 ## 開発サーバーの起動
 
 ```sh
-# PostgreSQL を起動
+# PostgreSQL + GCS エミュレータを起動
 docker compose up -d
 
 # ターミナル 1: API (ポート 8080)
@@ -151,6 +167,12 @@ pnpm dev:front
 ```
 
 ブラウザで `http://localhost:5173` を開くと SPA が表示され、`/api/*` へのリクエストは `http://localhost:8080` へクロスオリジンで転送されます。
+
+| サービス       | URL                       |
+| -------------- | ------------------------- |
+| フロントエンド | http://localhost:5173     |
+| API            | http://localhost:8080     |
+| GCS エミュレータ | http://localhost:1324   |
 
 ### フロントエンド単体
 

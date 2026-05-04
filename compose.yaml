@@ -27,3 +27,13 @@ services:
       timeout: 10s
       retries: 5
       start_period: 5s
+
+  gcs-emulator:
+    image: google/cloud-sdk:emulators
+    container_name: gcs-emulator
+    ports:
+      - "1324:1324"
+    volumes:
+      - ./gcs_data:/data # データを永続化する場合
+    # 0.0.0.0でバインドし、データを保存するディレクトリを指定
+    command: gcloud emulators storage start --address=0.0.0.0 --port=1324 --data-dir=/data

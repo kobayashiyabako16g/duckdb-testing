@@ -65,6 +65,9 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,turbo
 
+# GCS emulator data
+gcs_data/
+
 # Terraform
 infra/.terraform/
 infra/.terraform.lock.hcl
