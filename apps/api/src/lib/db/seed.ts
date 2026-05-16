@@ -13,7 +13,8 @@ const db = drizzle(client, { schema });
 async function main() {
   await reset(db, schema);
 
-  const tenantIds = Array.from({ length: 3 }, () => uuidv7());
+  const DEV_TENANT_ID = "00000000-0000-7000-8000-000000000001";
+  const tenantIds = [DEV_TENANT_ID, uuidv7(), uuidv7()];
 
   await seed(db, schema).refine((f) => ({
     tenants: {
