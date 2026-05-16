@@ -36,6 +36,12 @@ async function main() {
     },
   }));
 
+  await db.insert(schema.users).values({
+    tenantId: tenantIds[0]!,
+    email: "dev@example.com",
+    role: "admin",
+  });
+
   console.log("Seeding done.");
   await client.end();
 }

@@ -1,6 +1,14 @@
 {
   "$schema": "https://v2-8-20.turborepo.dev/schema.json",
-  "globalEnv": ["DB_USER", "DB_PASSWORD", "DB_NAME", "DB_PORT", "DATABASE_URL"],
+  "globalEnv": [
+    "APP_ENV",
+    "DB_USER",
+    "DB_PASSWORD",
+    "DB_NAME",
+    "DB_PORT",
+    "DATABASE_URL",
+    "GCS_BUCKET_NAME"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
