@@ -10,6 +10,11 @@ export default defineConfig(({ mode }) => {
     ...loadEnv(mode, path.resolve(__dirname, "config/env"), ""),
   };
   return {
+    resolve: {
+      alias: {
+        "~": path.resolve(__dirname, "src"),
+      },
+    },
     plugins: [
       tanstackRouter({
         target: "react",

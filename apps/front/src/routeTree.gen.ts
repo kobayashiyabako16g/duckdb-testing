@@ -8,97 +8,97 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as HomeRouteImport } from "./routes/home";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as CsvIndexRouteImport } from "./routes/csv/index";
-import { Route as CsvNoheadRouteImport } from "./routes/csv/nohead";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as HomeRouteImport } from './routes/home'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as CsvIndexRouteImport } from './routes/csv/index'
+import { Route as CsvNoheadRouteImport } from './routes/csv/nohead'
 
 const HomeRoute = HomeRouteImport.update({
-  id: "/home",
-  path: "/home",
+  id: '/home',
+  path: '/home',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const CsvIndexRoute = CsvIndexRouteImport.update({
-  id: "/csv/",
-  path: "/csv/",
+  id: '/csv/',
+  path: '/csv/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const CsvNoheadRoute = CsvNoheadRouteImport.update({
-  id: "/csv/nohead",
-  path: "/csv/nohead",
+  id: '/csv/nohead',
+  path: '/csv/nohead',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/home": typeof HomeRoute;
-  "/csv/nohead": typeof CsvNoheadRoute;
-  "/csv/": typeof CsvIndexRoute;
+  '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/csv/nohead': typeof CsvNoheadRoute
+  '/csv/': typeof CsvIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/home": typeof HomeRoute;
-  "/csv/nohead": typeof CsvNoheadRoute;
-  "/csv": typeof CsvIndexRoute;
+  '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/csv/nohead': typeof CsvNoheadRoute
+  '/csv': typeof CsvIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/home": typeof HomeRoute;
-  "/csv/nohead": typeof CsvNoheadRoute;
-  "/csv/": typeof CsvIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/home': typeof HomeRoute
+  '/csv/nohead': typeof CsvNoheadRoute
+  '/csv/': typeof CsvIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: "/" | "/home" | "/csv/nohead" | "/csv/";
-  fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/home" | "/csv/nohead" | "/csv";
-  id: "__root__" | "/" | "/home" | "/csv/nohead" | "/csv/";
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/home' | '/csv/nohead' | '/csv/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/home' | '/csv/nohead' | '/csv'
+  id: '__root__' | '/' | '/home' | '/csv/nohead' | '/csv/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  HomeRoute: typeof HomeRoute;
-  CsvNoheadRoute: typeof CsvNoheadRoute;
-  CsvIndexRoute: typeof CsvIndexRoute;
+  IndexRoute: typeof IndexRoute
+  HomeRoute: typeof HomeRoute
+  CsvNoheadRoute: typeof CsvNoheadRoute
+  CsvIndexRoute: typeof CsvIndexRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/home": {
-      id: "/home";
-      path: "/home";
-      fullPath: "/home";
-      preLoaderRoute: typeof HomeRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/csv/": {
-      id: "/csv/";
-      path: "/csv";
-      fullPath: "/csv/";
-      preLoaderRoute: typeof CsvIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/csv/nohead": {
-      id: "/csv/nohead";
-      path: "/csv/nohead";
-      fullPath: "/csv/nohead";
-      preLoaderRoute: typeof CsvNoheadRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/csv/': {
+      id: '/csv/'
+      path: '/csv'
+      fullPath: '/csv/'
+      preLoaderRoute: typeof CsvIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/csv/nohead': {
+      id: '/csv/nohead'
+      path: '/csv/nohead'
+      fullPath: '/csv/nohead'
+      preLoaderRoute: typeof CsvNoheadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,7 +107,7 @@ const rootRouteChildren: RootRouteChildren = {
   HomeRoute: HomeRoute,
   CsvNoheadRoute: CsvNoheadRoute,
   CsvIndexRoute: CsvIndexRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
