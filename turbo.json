@@ -7,7 +7,12 @@
     "DB_NAME",
     "DB_PORT",
     "DATABASE_URL",
-    "GCS_BUCKET_NAME"
+    "GCS_BUCKET_NAME",
+    "GCS_EMULATOR_HOST",
+    "DEV_USER_EMAIL",
+    "CF_ACCESS_TEAM_DOMAIN",
+    "CF_ACCESS_AUD",
+    "PORT"
   ],
   "tasks": {
     "build": {

@@ -15,7 +15,9 @@ const MANUAL_BUNDLES: duckdb.DuckDBBundles = {
   },
 };
 
-export async function InitDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
+const dbCache = new Map<string, Promise<duckdb.AsyncDuckDB>>();
+
+async function createDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
   const bundle = await duckdb.selectBundle(MANUAL_BUNDLES);
   // biome-ignore lint/style/noNonNullAssertion: <explanation>
   const worker = new Worker(bundle.mainWorker!);
@@ -31,8 +33,20 @@ export async function InitDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
     console.warn("open error", error);
   }
   const conn = await db.connect();
-  // Load HTTPFS extension
   await conn.query("INSTALL httpfs");
   await conn.query("LOAD httpfs");
+  await conn.close();
   return db;
+}
+
+export function InitDuckDB(dbName: string): Promise<duckdb.AsyncDuckDB> {
+  let cached = dbCache.get(dbName);
+  if (!cached) {
+    cached = createDuckDB(dbName).catch((err) => {
+      dbCache.delete(dbName);
+      throw err;
+    });
+    dbCache.set(dbName, cached);
+  }
+  return cached;
 }

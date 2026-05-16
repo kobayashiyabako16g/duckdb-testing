@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => {
     ...loadEnv(mode, path.resolve(__dirname, "config/env"), ""),
   };
   return {
+    envDir: path.resolve(__dirname, "config/env"),
+    define: {
+      "process.env.API_BASE_URL": JSON.stringify(process.env.API_BASE_URL ?? ""),
+    },
     resolve: {
       alias: {
         "~": path.resolve(__dirname, "src"),

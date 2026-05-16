@@ -5,7 +5,8 @@
   "scripts": {
     "build:api": "dotenvx run -- turbo run build --filter=@apps/api... --ui=tui",
     "build:front": "dotenvx run -- turbo run build --filter=@apps/front...",
-    "dev:front": "dotenvx run -- turbo run dev --filter=@apps/front... --ui=tui",
+    "dev:all": "APP_ENV=development dotenvx run -- turbo run dev --ui=tui",
+    "dev:front": "APP_ENV=development dotenvx run -- turbo run dev --filter=@apps/front... --ui=tui",
     "dev:api": "APP_ENV=development dotenvx run -- turbo run dev --filter=@apps/api... --ui=tui",
     "db:generate": "dotenvx run -- turbo run db:generate --filter=@apps/api... --ui=tui",
     "db:migrate": "dotenvx run -- turbo run db:migrate --filter=@apps/api... --ui=tui",

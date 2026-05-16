@@ -35,7 +35,12 @@ app.get("/api/signed-url", async (c) => {
     return c.json({ signedUrl });
   } catch (error) {
     console.error("Error generating GCS signed URL:", error);
-    return c.json({ error: "Failed to generate signed URL" }, 500);
+    const detail = config.isDev
+      ? error instanceof Error
+        ? `${error.message}\n${error.stack ?? ""}`
+        : String(error)
+      : undefined;
+    return c.json({ error: "Failed to generate signed URL", detail }, 500);
   }
 });
 
