@@ -27,12 +27,3 @@ services:
       timeout: 10s
       retries: 5
       start_period: 5s
-
-  fake-gcs-server:
-    image: fsouza/fake-gcs-server
-    container_name: fake-gcs-server
-    ports:
-      - "4443:4443"
-    volumes:
-      - ./gcs_data:/data
-    command: -scheme http -port 4443 -external-url "http://localhost:4443" -data /data

@@ -18,6 +18,5 @@ export const config = {
   databaseUrl: requireEnv("DATABASE_URL"),
   port: Number(process.env["PORT"] ?? 8080),
   gcsBucketName: requireEnv("GCS_BUCKET_NAME"),
-  gcsEmulatorHost: process.env["GCS_EMULATOR_HOST"] ?? "",
   devUserEmail: process.env["DEV_USER_EMAIL"] ?? "dev@example.com",
 };

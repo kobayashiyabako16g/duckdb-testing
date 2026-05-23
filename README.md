@@ -55,22 +55,16 @@ devenv shell
 pnpm install
 ```
 
-### 3. GCS エミュレータのセットアップ
+### 3. GCS のセットアップ
 
-ローカル開発では `docker compose` に含まれる GCS エミュレータを使用します。ADC や実際の GCS バケットは不要です。
-
-```sh
-# docker compose up -d で gcs-emulator も起動します (後述のステップ 7 で実行)
-```
-
-#### バケットの作成
-
-エミュレータ起動後、バケットを作成します:
+ローカル開発でも実際の Cloud Storage バケットを使用します (fake-gcs エミュレータは廃止)。事前に GCP プロジェクトとバケットを用意し、`gcloud` で ADC を設定してください。
 
 ```sh
-curl -s -X POST "http://localhost:1324/storage/v1/b?project=local-dev" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"local-bucket"}' | jq .name
+# Application Default Credentials を設定
+gcloud auth application-default login
+
+# バケットを作成 (未作成の場合)
+gsutil mb -l asia-northeast1 gs://your-bucket-name
 ```
 
 #### テストファイルのアップロード
@@ -78,18 +72,16 @@ curl -s -X POST "http://localhost:1324/storage/v1/b?project=local-dev" \
 オブジェクトのパス構造:
 
 ```
-local-bucket/tenant_id={tenant_id}/mock_data.csv
-local-bucket/tenant_id={tenant_id}/output.csv
+your-bucket-name/tenant_id={tenant_id}/mock_data.csv
+your-bucket-name/tenant_id={tenant_id}/output.csv
 ```
 
 ```sh
-curl -s -X POST \
-  "http://localhost:1324/upload/storage/v1/b/local-bucket/o?uploadType=media&name=tenant_id%3Dtenant-001%2Fmock_data.csv" \
-  -H "Content-Type: text/csv" \
-  --data-binary @./path/to/mock_data.csv
+gsutil cp ./path/to/mock_data.csv \
+  gs://your-bucket-name/tenant_id=tenant-001/mock_data.csv
 ```
 
-> `GCS_EMULATOR_HOST` が設定されている場合、API は署名付き URL の代わりにエミュレータへの直接 URL を返します。
+> API は常に署名付き URL を発行します。ADC に対応する SA に `roles/storage.objectViewer` (および署名用に `roles/iam.serviceAccountTokenCreator` または `iam.serviceAccounts.signBlob` 権限) が必要です。
 
 ### 4. 環境変数の設定
 
@@ -100,8 +92,7 @@ curl -s -X POST \
 ```env
 APP_ENV=development
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/app
-GCS_BUCKET_NAME=local-bucket
-GCS_EMULATOR_HOST=http://localhost:1324
+GCS_BUCKET_NAME=your-bucket-name
 DEV_USER_EMAIL=dev@example.com   # db:seed で作成したユーザーのメールアドレス
 
 # APP_ENV=development の場合は不要
@@ -156,7 +147,7 @@ pnpm --filter @apps/api db:migrate
 ## 開発サーバーの起動
 
 ```sh
-# PostgreSQL + GCS エミュレータを起動
+# PostgreSQL を起動
 docker compose up -d
 
 # ターミナル 1: API (ポート 8080)
@@ -168,11 +159,10 @@ pnpm dev:front
 
 ブラウザで `http://localhost:5173` を開くと SPA が表示され、`/api/*` へのリクエストは `http://localhost:8080` へクロスオリジンで転送されます。
 
-| サービス         | URL                   |
-| ---------------- | --------------------- |
-| フロントエンド   | http://localhost:5173 |
-| API              | http://localhost:8080 |
-| GCS エミュレータ | http://localhost:1324 |
+| サービス       | URL                   |
+| -------------- | --------------------- |
+| フロントエンド | http://localhost:5173 |
+| API            | http://localhost:8080 |
 
 ### フロントエンド単体
 
