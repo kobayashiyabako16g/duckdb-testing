@@ -76,8 +76,20 @@ your-bucket-name/tenant_id={tenant_id}/mock_data.csv
 your-bucket-name/tenant_id={tenant_id}/output.csv
 ```
 
+`scripts/generate-mock-data.mts` で `mock_data.csv` (gzip 圧縮済み) を生成できます。Node v22.6+ の [Type Stripping](https://nodejs.org/api/typescript.html#type-stripping) で直接実行できます (v23.6+ ではフラグ不要):
+
 ```sh
-gsutil cp ./path/to/mock_data.csv \
+# 既定: 10,000 行, ./mock_data.csv に出力
+node scripts/generate-mock-data.mts
+
+# 行数や出力先を指定
+node scripts/generate-mock-data.mts --rows 50000 --out ./mock_data.csv
+```
+
+生成した CSV を GCS にアップロード:
+
+```sh
+gsutil cp ./mock_data.csv \
   gs://your-bucket-name/tenant_id=tenant-001/mock_data.csv
 ```
 

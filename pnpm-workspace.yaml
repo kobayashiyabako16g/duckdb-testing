@@ -5,7 +5,13 @@ allowBuilds:
 
 # 7days: Type: number (minutes)
 minimumReleaseAge: 10080
+overrides:
+  esbuild@<=0.24.2: ">=0.25.0"
+  fast-xml-builder@<=1.1.6: ">=1.1.7"
+  qs@>=6.11.1 <=6.15.1: ">=6.15.2"
+  turbo@<=2.9.13: ">=2.9.14"
 
 # minimumReleaseAgeExclude:
 #   - "hono"
 #   - "vite"
+# - "qs"

@@ -16,7 +16,7 @@
     "@hono/node-server": "^2.0.0",
     "drizzle-orm": "^0.45.2",
     "drizzle-seed": "^0.3.1",
-    "hono": "^4.12.15",
+    "hono": "4.12.18",
     "jose": "^6.2.2",
     "postgres": "^3.4.9",
     "uuid": "^14.0.0"
