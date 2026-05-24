@@ -1,38 +1,59 @@
-export interface CFUser {
+import { API_BASE_URL } from "~/config/env";
+
+export interface AppUser {
+  id: string;
+  tenant_id: string;
   email: string;
-  name: string;
-  sub: string;
+  role: string;
 }
 
-function parseCFJwt(token: string): CFUser | null {
+export interface AppTenant {
+  id: string;
+  name: string;
+}
+
+export interface MeResponse {
+  user: AppUser | null;
+  tenant: AppTenant | null;
+  email: string;
+  needsOnboarding: boolean;
+}
+
+const STORAGE_KEY = "google_id_token";
+
+export function getStoredIdToken(): string | null {
   try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))) as Record<
-      string,
-      unknown
-    >;
-    const email = typeof payload.email === "string" ? payload.email : "";
-    const name = typeof payload.name === "string" ? payload.name : email.split("@")[0];
-    const sub = typeof payload.sub === "string" ? payload.sub : "";
-    if (!email) return null;
-    return { email, name, sub };
+    return localStorage.getItem(STORAGE_KEY);
   } catch {
     return null;
   }
 }
 
-/** Cloudflare Access が設定する CF_Authorization cookie から認証ユーザーを取得する */
-export function getCFUser(): CFUser | null {
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const eqIdx = cookie.indexOf("=");
-    if (eqIdx === -1) continue;
-    const key = cookie.slice(0, eqIdx).trim();
-    const value = cookie.slice(eqIdx + 1).trim();
-    if (key === "CF_Authorization" && value) {
-      return parseCFJwt(value);
-    }
+export function setStoredIdToken(token: string | null): void {
+  try {
+    if (token) localStorage.setItem(STORAGE_KEY, token);
+    else localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
   }
-  return null;
+}
+
+// /api/me 専用 fetcher。apiClient と循環参照を避けるためインラインで実装する。
+export async function fetchMe(): Promise<MeResponse | null> {
+  const token = getStoredIdToken();
+  if (!token) return null;
+  const base = API_BASE_URL || window.location.origin;
+  try {
+    const res = await fetch(new URL("/api/me", base).toString(), {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 401) {
+      setStoredIdToken(null);
+      return null;
+    }
+    if (!res.ok) return null;
+    return (await res.json()) as MeResponse;
+  } catch {
+    return null;
+  }
 }

@@ -11,6 +11,11 @@ function devOptional(key: string): string {
   return requireEnv(key);
 }
 
+function prodOptional(key: string): string {
+  if (!isDev) return process.env[key] ?? "";
+  return requireEnv(key);
+}
+
 export const config = {
   isDev,
   cfTeamDomain: devOptional("CF_ACCESS_TEAM_DOMAIN"),
@@ -18,5 +23,6 @@ export const config = {
   databaseUrl: requireEnv("DATABASE_URL"),
   port: Number(process.env["PORT"] ?? 8080),
   gcsBucketName: requireEnv("GCS_BUCKET_NAME"),
-  devUserEmail: process.env["DEV_USER_EMAIL"] ?? "dev@example.com",
+  // ローカル開発で Google ID Token を検証するために使用。本番は CF Access が前段で検証するため不要。
+  googleClientId: prodOptional("GOOGLE_OAUTH_CLIENT_ID"),
 };

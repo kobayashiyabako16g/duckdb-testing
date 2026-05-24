@@ -71,3 +71,18 @@ variable "cloudflare_allowed_email_domains" {
   description = "Cloudflare Access でアクセスを許可するメールドメインのリスト"
   type        = list(string)
 }
+
+# ── Google OAuth (Cloudflare Access の Identity Provider 用) ─────
+# 空文字なら Google IdP は登録せず、CF Access のデフォルト IdP (One-Time PIN 等) を使用する。
+variable "google_oauth_client_id" {
+  description = "Cloudflare Access の Google IdP で使用する OAuth Client ID"
+  type        = string
+  default     = ""
+}
+
+variable "google_oauth_client_secret" {
+  description = "Cloudflare Access の Google IdP で使用する OAuth Client Secret"
+  type        = string
+  sensitive   = true
+  default     = ""
+}

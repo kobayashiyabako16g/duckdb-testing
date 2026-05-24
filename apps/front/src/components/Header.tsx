@@ -3,7 +3,8 @@ import { useAuth } from "~/provider/auth";
 import ThemeToggle from "./ThemaToggle";
 
 export function Header() {
-  const { user, isLoading } = useAuth();
+  const { user, email, isLoading, signOut } = useAuth();
+  const badgeEmail = user?.email ?? email;
 
   return (
     <nav className="bg-slate-50 border-gray-200 py-2.5 dark:bg-gray-900">
@@ -14,7 +15,16 @@ export function Header() {
           </span>
         </Link>
         <div className="flex items-center gap-3 lg:order-2">
-          {!isLoading && user && <UserBadge email={user.email} name={user.name} />}
+          {!isLoading && badgeEmail && <UserBadge email={badgeEmail} />}
+          {!isLoading && badgeEmail && (
+            <button
+              type="button"
+              onClick={signOut}
+              className="text-sm text-gray-700 dark:text-gray-300 hover:text-purple-700"
+            >
+              ログアウト
+            </button>
+          )}
           <ThemeToggle />
           <button
             data-collapse-toggle="mobile-menu-2"
@@ -85,6 +95,32 @@ export function Header() {
                 nohead
               </Link>
             </li>
+            <li>
+              <Link
+                to="/csv/by-date"
+                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+              >
+                日付ビュー
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/upload"
+                className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+              >
+                アップロード
+              </Link>
+            </li>
+            {user?.role === "admin" && (
+              <li>
+                <Link
+                  to="/register"
+                  className="block py-2 pl-3 pr-4 text-gray-700 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:hover:text-purple-700 lg:p-0 dark:text-gray-400 lg:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent dark:border-gray-700"
+                >
+                  ユーザー登録
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
       </div>
@@ -92,8 +128,8 @@ export function Header() {
   );
 }
 
-function UserBadge({ email, name }: { email: string; name: string }) {
-  const initial = name.charAt(0).toUpperCase();
+function UserBadge({ email }: { email: string }) {
+  const initial = email.charAt(0).toUpperCase();
   return (
     <div className="flex items-center gap-2">
       <div

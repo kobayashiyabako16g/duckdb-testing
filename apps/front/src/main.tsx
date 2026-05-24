@@ -1,7 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import { GOOGLE_OAUTH_CLIENT_ID } from "./config/env";
 import { routeTree } from "./routeTree.gen";
 import "./app.css";
 
@@ -21,7 +23,9 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <RouterProvider router={router} />
+      <GoogleOAuthProvider clientId={GOOGLE_OAUTH_CLIENT_ID}>
+        <RouterProvider router={router} />
+      </GoogleOAuthProvider>
     </StrictMode>,
   );
 }

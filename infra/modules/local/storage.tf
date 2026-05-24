@@ -12,7 +12,7 @@ resource "google_storage_bucket" "data" {
       "http://localhost:5173",
       "http://127.0.0.1:5173",
     ]
-    method = ["GET", "HEAD", "OPTIONS"]
+    method = ["GET", "HEAD", "OPTIONS", "PUT"]
     response_header = [
       "Content-Type",
       "Content-Length",

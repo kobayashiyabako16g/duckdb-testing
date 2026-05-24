@@ -9,11 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadRouteImport } from './routes/upload'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CsvIndexRouteImport } from './routes/csv/index'
 import { Route as CsvNoheadRouteImport } from './routes/csv/nohead'
+import { Route as CsvByDateRouteImport } from './routes/csv/by-date'
 
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -34,16 +53,29 @@ const CsvNoheadRoute = CsvNoheadRouteImport.update({
   path: '/csv/nohead',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CsvByDateRoute = CsvByDateRouteImport.update({
+  id: '/csv/by-date',
+  path: '/csv/by-date',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
+  '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
+  '/upload': typeof UploadRoute
+  '/csv/by-date': typeof CsvByDateRoute
   '/csv/nohead': typeof CsvNoheadRoute
   '/csv/': typeof CsvIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
+  '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
+  '/upload': typeof UploadRoute
+  '/csv/by-date': typeof CsvByDateRoute
   '/csv/nohead': typeof CsvNoheadRoute
   '/csv': typeof CsvIndexRoute
 }
@@ -51,26 +83,80 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/home': typeof HomeRoute
+  '/onboarding': typeof OnboardingRoute
+  '/register': typeof RegisterRoute
+  '/upload': typeof UploadRoute
+  '/csv/by-date': typeof CsvByDateRoute
   '/csv/nohead': typeof CsvNoheadRoute
   '/csv/': typeof CsvIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/home' | '/csv/nohead' | '/csv/'
+  fullPaths:
+    | '/'
+    | '/home'
+    | '/onboarding'
+    | '/register'
+    | '/upload'
+    | '/csv/by-date'
+    | '/csv/nohead'
+    | '/csv/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/csv/nohead' | '/csv'
-  id: '__root__' | '/' | '/home' | '/csv/nohead' | '/csv/'
+  to:
+    | '/'
+    | '/home'
+    | '/onboarding'
+    | '/register'
+    | '/upload'
+    | '/csv/by-date'
+    | '/csv/nohead'
+    | '/csv'
+  id:
+    | '__root__'
+    | '/'
+    | '/home'
+    | '/onboarding'
+    | '/register'
+    | '/upload'
+    | '/csv/by-date'
+    | '/csv/nohead'
+    | '/csv/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HomeRoute: typeof HomeRoute
+  OnboardingRoute: typeof OnboardingRoute
+  RegisterRoute: typeof RegisterRoute
+  UploadRoute: typeof UploadRoute
+  CsvByDateRoute: typeof CsvByDateRoute
   CsvNoheadRoute: typeof CsvNoheadRoute
   CsvIndexRoute: typeof CsvIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -99,12 +185,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CsvNoheadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/csv/by-date': {
+      id: '/csv/by-date'
+      path: '/csv/by-date'
+      fullPath: '/csv/by-date'
+      preLoaderRoute: typeof CsvByDateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HomeRoute: HomeRoute,
+  OnboardingRoute: OnboardingRoute,
+  RegisterRoute: RegisterRoute,
+  UploadRoute: UploadRoute,
+  CsvByDateRoute: CsvByDateRoute,
   CsvNoheadRoute: CsvNoheadRoute,
   CsvIndexRoute: CsvIndexRoute,
 }

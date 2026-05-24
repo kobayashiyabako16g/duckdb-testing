@@ -23,3 +23,9 @@ cloudflare_account_id = "your-cloudflare-account-id"
 app_domain = "app.your-domain.com"
 
 cloudflare_allowed_email_domains = ["your-company.com"]
+
+# ── Google OAuth (Cloudflare Access の Identity Provider 用) ─────
+# 設定すると CF Access のログイン画面に「Sign in with Google」が出る。
+# 空のままでも CF Access のデフォルト IdP (One-Time PIN 等) で動作する。
+google_oauth_client_id     = ""
+google_oauth_client_secret = ""
