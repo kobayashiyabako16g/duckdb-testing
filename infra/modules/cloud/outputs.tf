@@ -32,3 +32,35 @@ output "frontend_bucket_name" {
   description = "フロントエンド静的ファイルをデプロイする GCS バケット名"
   value       = google_storage_bucket.frontend.name
 }
+
+# ── Cloud SQL 関連出力 ────────────────────────────────────────
+
+output "cloudsql_instance_name" {
+  description = "Cloud SQL インスタンス名"
+  value       = google_sql_database_instance.postgres.name
+}
+
+output "cloudsql_private_ip" {
+  description = "Cloud SQL インスタンスの Private IP アドレス"
+  value       = google_sql_database_instance.postgres.private_ip_address
+}
+
+output "cloudsql_connection_name" {
+  description = "Cloud SQL Proxy 接続用の接続名 (project:region:instance)"
+  value       = google_sql_database_instance.postgres.connection_name
+}
+
+output "cloudsql_database_name" {
+  description = "作成されたデータベース名"
+  value       = google_sql_database.duckdb_testing.name
+}
+
+output "cloudsql_database_user" {
+  description = "Cloud SQL のデータベースユーザー名"
+  value       = google_sql_user.db_user.name
+}
+
+output "cloudsql_database_password_secret_id" {
+  description = "Secret Manager に保存されたパスワードのシークレットID"
+  value       = google_secret_manager_secret.cloudsql_database_url.secret_id
+}

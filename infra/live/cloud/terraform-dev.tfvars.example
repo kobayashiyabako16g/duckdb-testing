@@ -1,0 +1,16 @@
+# 開発環境設定例
+# 使用方法: terragrunt plan --var-file dev.tfvars
+
+# ── GCP ─────────────────────────────────────────────────────
+project_id = "your-gcp-project-id-dev"
+
+# ── Cloud Run ────────────────────────────────────────────────
+allow_unauthenticated   = true
+cloud_run_min_instances = 0   # コールドスタート許容
+cloud_run_max_instances = 5   # スケール制限
+
+# ── Cloud SQL ────────────────────────────────────────────────
+enable_auto_start_stop = true  # 自動停止で費用削減
+
+# ── Cloudflare + Google OAuth ─────────────────────────────────
+# (terraform.tfvars から読み込み)

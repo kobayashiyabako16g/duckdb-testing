@@ -33,3 +33,19 @@ resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+# ── Cloud SQL 権限 ──────────────────────────────────────
+
+# Cloud Run (API Service Account) が Cloud SQL にアクセスする権限
+resource "google_project_iam_member" "api_cloudsql_client" {
+  project = var.project_id
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.api.email}"
+}
+
+# Cloud Run (API Service Account) が Secret Manager から DATABASE_URL を取得する権限
+resource "google_secret_manager_secret_iam_member" "api_cloudsql_secret_accessor" {
+  secret_id = google_secret_manager_secret.cloudsql_database_url.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.api.email}"
+}

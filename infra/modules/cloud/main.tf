@@ -10,6 +10,10 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "~> 5.19.1"
     }
+    onepassword = {
+      source  = "1Password/onepassword"
+      version = "~> 2.1.0"
+    }
   }
 
   # GCS をバックエンドにする場合はコメントを外す
@@ -19,11 +23,4 @@ terraform {
   # }
 }
 
-provider "google" {
-  project = var.project_id
-  region  = var.region
-}
-
-provider "cloudflare" {
-  api_token = var.cloudflare_api_token
-}
+# Provider configuration is in providers.tf

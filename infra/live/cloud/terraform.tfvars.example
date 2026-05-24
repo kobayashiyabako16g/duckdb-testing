@@ -4,11 +4,23 @@ region     = "asia-northeast1"
 image_tag  = "latest"
 
 gcs_bucket_name = "your-gcs-bucket-name"
-database_url    = "postgres://user:password@host:5432/dbname"
 
 allow_unauthenticated   = true
 cloud_run_min_instances = 0
 cloud_run_max_instances = 10
+
+# ── 1Password ────────────────────────────────────────────────
+# 推奨: 1Password app にサインインした状態で実行
+# 必要なら対象アカウントを op CLI で確認して指定
+# export OP_ACCOUNT="my.1password.com"
+# op account list
+# onepassword_vault_name            = "Terraform"
+
+# ── Cloud SQL (PostgreSQL) ──────────────────────────────────────
+# デフォルト値でよければ指定不要。カスタマイズする場合のみ記述。
+# database_name          = "duckdb_testing"
+# database_user          = "duckdb_user"
+enable_auto_start_stop = true  # Cloud Scheduler による自動停止・起動
 
 # ── Cloudflare Access (API JWT 検証用) ────────────────────────
 # cf_access_aud は Terraform が cloudflare_zero_trust_access_application から自動取得するため不要

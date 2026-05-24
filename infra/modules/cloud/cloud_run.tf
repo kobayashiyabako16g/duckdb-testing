@@ -49,7 +49,7 @@ resource "google_cloud_run_v2_service" "api" {
         name = "DATABASE_URL"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.database_url.secret_id
+            secret  = google_secret_manager_secret.cloudsql_database_url.secret_id
             version = "latest"
           }
         }
@@ -68,4 +68,8 @@ resource "google_cloud_run_v2_service" "api" {
   # cloudflare_pages_project → cloud_run → secret_version → access_app → pages という循環依存になる。
   # Terraform apply 内でシークレットバージョンは後から作成されるが、Cloud Run は起動時に
   # version = "latest" を動的に解決するため運用上の問題はない。
+  # Cloud SQL の database_url シークレットバージョンも同様に自動解決される。
+  depends_on = [
+    google_secret_manager_secret_version.cloudsql_database_url,
+  ]
 }
