@@ -11,7 +11,9 @@
     "DEV_USER_EMAIL",
     "CF_ACCESS_TEAM_DOMAIN",
     "CF_ACCESS_AUD",
-    "PORT"
+    "PORT",
+    "GOOGLE_OAUTH_CLIENT_ID",
+    "VITE_GOOGLE_OAUTH_CLIENT_ID"
   ],
   "tasks": {
     "build": {

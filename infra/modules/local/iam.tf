@@ -17,6 +17,14 @@ resource "google_storage_bucket_iam_member" "api_local_object_viewer" {
   member = "serviceAccount:${google_service_account.api_local.email}"
 }
 
+# アップロード用署名付き URL を発行するために、署名者 SA 自身が
+# storage.objects.create を持っている必要がある (V4 署名は署名者の権限を継承)
+resource "google_storage_bucket_iam_member" "api_local_object_creator" {
+  bucket = google_storage_bucket.data.name
+  role   = "roles/storage.objectCreator"
+  member = "serviceAccount:${google_service_account.api_local.email}"
+}
+
 # 署名付き URL 用に signBlob を呼べるようにする
 resource "google_service_account_iam_member" "api_local_token_creator_self" {
   service_account_id = google_service_account.api_local.name
