@@ -10,7 +10,8 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",
-    "format:check": "oxfmt --check ."
+    "format:check": "oxfmt --check .",
+    "gen:api-types": "openapi-typescript ../api/openapi.json -o src/lib/api-types.gen.ts"
   },
   "dependencies": {
     "@duckdb/duckdb-wasm": "1.33.1-dev45.0",
@@ -27,6 +28,7 @@
     "@types/node": "^22.19.17",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "openapi-typescript": "7.13.0",
     "tailwindcss": "^4.2.4",
     "typescript": "^5.9.3",
     "vite": "8.0.5"

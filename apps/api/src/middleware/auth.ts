@@ -40,6 +40,15 @@ export const authenticateEmail = createMiddleware<{ Variables: AuthVariables }>(
   },
 );
 
+export const requireAdmin = createMiddleware<{ Variables: AuthVariables }>(
+  async (c, next) => {
+    if (c.var.user.role !== "admin") {
+      return c.json({ error: "Admin only" }, 403);
+    }
+    await next();
+  },
+);
+
 // 認証済み + DB user 必須。未登録なら 404 + needsOnboarding を返す。
 export const cfAccessAuth = createMiddleware<{ Variables: AuthVariables }>(async (c, next) => {
   const result = await resolveEmail(c);

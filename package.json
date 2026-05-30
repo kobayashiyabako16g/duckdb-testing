@@ -13,6 +13,8 @@
     "db:studio": "dotenvx run -- turbo run db:studio --filter=@apps/api... --ui=tui",
     "db:push": "dotenvx run -- turbo run db:push --filter=@apps/api... --ui=tui",
     "db:seed": "dotenvx run -- turbo run db:seed --filter=@apps/api... --ui=tui",
+    "gen:openapi": "dotenvx run -- turbo run gen:openapi --filter=@apps/api",
+    "gen:api-types": "dotenvx run -- turbo run gen:api-types --filter=@apps/front",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt .",

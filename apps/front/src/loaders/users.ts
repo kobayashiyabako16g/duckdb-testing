@@ -1,17 +1,16 @@
+import type { paths } from "~/lib/api-types.gen";
 import { apiJson } from "~/lib/apiClient";
+import type { AppUser } from "~/lib/auth";
 
-export interface CreatedUser {
-  id: string;
-  tenant_id: string;
-  email: string;
-  role: string;
-}
+export type CreatedUser = AppUser;
 
-export async function createUser(input: {
-  email: string;
-  role: "admin" | "viewer";
-}): Promise<CreatedUser> {
-  const data = await apiJson<{ user: CreatedUser }>("/api/users", {
+type CreateUserBody =
+  paths["/api/users"]["post"]["requestBody"]["content"]["application/json"];
+type CreateUserResponse =
+  paths["/api/users"]["post"]["responses"][201]["content"]["application/json"];
+
+export async function createUser(input: CreateUserBody): Promise<CreatedUser> {
+  const data = await apiJson<CreateUserResponse>("/api/users", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),

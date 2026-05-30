@@ -1,0 +1,860 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "duckdb-testing API",
+    "version": "0.1.0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "MeResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tenant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Tenant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "needsOnboarding": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user",
+          "tenant",
+          "email",
+          "needsOnboarding"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tenant_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "email",
+          "role"
+        ]
+      },
+      "Tenant": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "TenantsListResponse": {
+        "type": "object",
+        "properties": {
+          "tenants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tenant"
+            }
+          }
+        },
+        "required": [
+          "tenants"
+        ]
+      },
+      "OnboardingResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "tenant": {
+            "$ref": "#/components/schemas/Tenant"
+          }
+        },
+        "required": [
+          "user",
+          "tenant"
+        ]
+      },
+      "OnboardingBody": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/OnboardingCreateAction"
+          },
+          {
+            "$ref": "#/components/schemas/OnboardingJoinAction"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "action",
+          "mapping": {
+            "create": "#/components/schemas/OnboardingCreateAction",
+            "join": "#/components/schemas/OnboardingJoinAction"
+          }
+        }
+      },
+      "OnboardingCreateAction": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create"
+            ]
+          },
+          "tenantName": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "action",
+          "tenantName"
+        ]
+      },
+      "OnboardingJoinAction": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "join"
+            ]
+          },
+          "tenantId": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "action",
+          "tenantId"
+        ]
+      },
+      "CreateUserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "required": [
+          "user"
+        ]
+      },
+      "CreateUserBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "viewer"
+            ],
+            "default": "viewer"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "InitiateUploadResponse": {
+        "type": "object",
+        "properties": {
+          "signedUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "objectPath": {
+            "type": "string"
+          },
+          "requiredHeaders": {
+            "type": "object",
+            "properties": {
+              "Content-Type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "Content-Type"
+            ]
+          }
+        },
+        "required": [
+          "signedUrl",
+          "objectPath",
+          "requiredHeaders"
+        ]
+      },
+      "InitiateUploadBody": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "text/csv"
+            ]
+          },
+          "yyyy": {
+            "type": "integer"
+          },
+          "mm": {
+            "type": "integer"
+          },
+          "dd": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "contentType"
+        ]
+      },
+      "UploadsListResponse": {
+        "type": "object",
+        "properties": {
+          "uploads": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UploadItem"
+            }
+          }
+        },
+        "required": [
+          "uploads"
+        ]
+      },
+      "UploadItem": {
+        "type": "object",
+        "properties": {
+          "yyyy": {
+            "type": "integer"
+          },
+          "mm": {
+            "type": "integer"
+          },
+          "dd": {
+            "type": "integer"
+          },
+          "objectPath": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "uploadedAt": {
+            "type": "string"
+          },
+          "signedUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "yyyy",
+          "mm",
+          "dd",
+          "objectPath",
+          "size",
+          "uploadedAt",
+          "signedUrl"
+        ]
+      },
+      "SignedUrlResponse": {
+        "type": "object",
+        "properties": {
+          "signedUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "signedUrl"
+        ]
+      },
+      "SignedUrlErrorWithDetail": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/me": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "現在の認証ユーザーとテナントを取得",
+        "description": "認証は必須だが DB user が未登録でも 200 を返す (オンボーディング誘導用)。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "認証済みユーザー情報 (未オンボーディング時は user/tenant が null)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tenants": {
+      "get": {
+        "tags": [
+          "tenants"
+        ],
+        "summary": "テナント一覧 (オンボーディング用)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "テナント一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantsListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/onboarding": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "新規テナント作成 or 既存テナント参加",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "オンボーディング完了",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエスト不正",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "テナントが見つからない",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "既にオンボーディング済み",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users": {
+      "post": {
+        "tags": [
+          "users"
+        ],
+        "summary": "ユーザー追加 (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "作成完了",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateUserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエスト不正",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "admin 以外",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザー未登録 (要オンボーディング)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "email 重複",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads/initiate": {
+      "post": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "アップロード用 signed URL を発行",
+        "description": "yyyy/mm/dd を省略すると JST 当日が使われる。指定する場合は 3 つ揃って指定すること。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitiateUploadBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "signed URL 発行",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InitiateUploadResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエスト不正",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザー未登録 (要オンボーディング)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/uploads": {
+      "get": {
+        "tags": [
+          "uploads"
+        ],
+        "summary": "アップロード済み CSV を一覧",
+        "description": "dd を指定すると当日 1 件 (無ければ空配列)、省略すると yyyy/mm の全日分を返す。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100,
+              "example": 2025
+            },
+            "required": true,
+            "name": "yyyy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "example": 9
+            },
+            "required": true,
+            "name": "mm",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "example": 15
+            },
+            "required": false,
+            "name": "dd",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "アップロード一覧",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadsListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエスト不正",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザー未登録 (要オンボーディング)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバエラー",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/signed-url": {
+      "get": {
+        "tags": [
+          "gcs"
+        ],
+        "summary": "任意ファイル名の signed URL を発行",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "対象ファイル名",
+              "example": "report.csv"
+            },
+            "required": true,
+            "description": "対象ファイル名",
+            "name": "file",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "signed URL 発行",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "リクエスト不正",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "認証失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "ユーザー未登録 (要オンボーディング)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "サーバエラー (dev 環境では detail を含む)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedUrlErrorWithDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

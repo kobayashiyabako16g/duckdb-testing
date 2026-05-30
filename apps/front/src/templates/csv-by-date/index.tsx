@@ -100,12 +100,17 @@ function DayView({ date, setDate }: DayViewProps) {
       setHint("データを取得しています...");
       const buf = await (await fetch(signedUrl)).arrayBuffer();
       setHint("DuckDB に読み込んでいます...");
-      await database.registerFileBuffer(FILE_NAME, new Uint8Array(buf));
+      const bytes = new Uint8Array(buf);
+      // gzip magic (1f 8b) を見て圧縮形式を判定する。
+      // DuckDB の compression='auto' は拡張子で判断するため、'data.csv' だと gzip を見落とす。
+      const isGzip = bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+      const compression = isGzip ? "gzip" : "none";
+      await database.registerFileBuffer(FILE_NAME, bytes);
       const conn = await database.connect();
       try {
         await conn.query(`DROP TABLE IF EXISTS ${TABLE_NAME};`);
         await conn.query(
-          `CREATE TABLE ${TABLE_NAME} AS SELECT * FROM read_csv('${FILE_NAME}', header=true, compression='auto');`,
+          `CREATE TABLE ${TABLE_NAME} AS SELECT * FROM read_csv('${FILE_NAME}', header=true, compression='${compression}');`,
         );
       } finally {
         await conn.close();
@@ -138,11 +143,11 @@ function DayView({ date, setDate }: DayViewProps) {
       setError(null);
       setCurrentPage(0);
       setData([]);
+      setItem(null);
       try {
         const uploads = await listUploads({ yyyy: date.yyyy, mm: date.mm, dd: date.dd });
         if (cancelled) return;
         const found = uploads[0] ?? null;
-        setItem(found);
         if (!found) {
           setLoading(false);
           return;
@@ -150,6 +155,11 @@ function DayView({ date, setDate }: DayViewProps) {
         await loadForDate(db, found.signedUrl);
         if (cancelled) return;
         await fetchPage(db, 0);
+        if (cancelled) return;
+        // テーブル作成 + 初期ページ取得が終わってから item を立てる。
+        // 先に setItem すると、currentPage の useEffect が CREATE TABLE より前に
+        // SELECT を発火して "Table does not exist" になる。
+        setItem(found);
       } catch (err) {
         if (cancelled) return;
         const msg = err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);

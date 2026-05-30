@@ -1,27 +1,17 @@
+import type { components, paths } from "~/lib/api-types.gen";
 import { apiJson } from "~/lib/apiClient";
 
-export interface UploadItem {
-  yyyy: number;
-  mm: number;
-  dd: number;
-  objectPath: string;
-  size: number;
-  uploadedAt: string;
-  signedUrl: string;
-}
+export type UploadItem = components["schemas"]["UploadItem"];
 
-export interface InitiateResponse {
-  signedUrl: string;
-  objectPath: string;
-  requiredHeaders: Record<string, string>;
-}
+type InitiateBody =
+  paths["/api/uploads/initiate"]["post"]["requestBody"]["content"]["application/json"];
+export type InitiateResponse =
+  paths["/api/uploads/initiate"]["post"]["responses"][200]["content"]["application/json"];
 
-export async function initiateUpload(input: {
-  contentType: string;
-  yyyy?: number;
-  mm?: number;
-  dd?: number;
-}): Promise<InitiateResponse> {
+type ListUploadsResponse =
+  paths["/api/uploads"]["get"]["responses"][200]["content"]["application/json"];
+
+export async function initiateUpload(input: InitiateBody): Promise<InitiateResponse> {
   return apiJson<InitiateResponse>("/api/uploads/initiate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -66,6 +56,6 @@ export async function listUploads(input: {
     mm: String(input.mm),
   });
   if (input.dd !== undefined) params.set("dd", String(input.dd));
-  const data = await apiJson<{ uploads: UploadItem[] }>(`/api/uploads?${params.toString()}`);
+  const data = await apiJson<ListUploadsResponse>(`/api/uploads?${params.toString()}`);
   return data.uploads;
 }

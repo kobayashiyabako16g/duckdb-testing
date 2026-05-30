@@ -1,8 +1,12 @@
+import type { paths } from "~/lib/api-types.gen";
 import { apiJson, ApiError } from "~/lib/apiClient";
+
+type SignedUrlResponse =
+  paths["/api/signed-url"]["get"]["responses"][200]["content"]["application/json"];
 
 export async function getGCSSignedUrl(fileName: string): Promise<string | undefined> {
   try {
-    const data = await apiJson<{ signedUrl: string }>(
+    const data = await apiJson<SignedUrlResponse>(
       `/api/signed-url?file=${encodeURIComponent(fileName)}`,
     );
     return data.signedUrl;

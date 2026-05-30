@@ -1,23 +1,10 @@
 import { API_BASE_URL } from "~/config/env";
+import type { paths } from "./api-types.gen";
 
-export interface AppUser {
-  id: string;
-  tenant_id: string;
-  email: string;
-  role: string;
-}
-
-export interface AppTenant {
-  id: string;
-  name: string;
-}
-
-export interface MeResponse {
-  user: AppUser | null;
-  tenant: AppTenant | null;
-  email: string;
-  needsOnboarding: boolean;
-}
+export type MeResponse =
+  paths["/api/me"]["get"]["responses"][200]["content"]["application/json"];
+export type AppUser = NonNullable<MeResponse["user"]>;
+export type AppTenant = NonNullable<MeResponse["tenant"]>;
 
 const STORAGE_KEY = "google_id_token";
 

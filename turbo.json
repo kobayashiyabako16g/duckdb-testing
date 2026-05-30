@@ -40,6 +40,15 @@
     },
     "test": {
       "cache": true
+    },
+    "gen:openapi": {
+      "outputs": ["openapi.json"],
+      "cache": true
+    },
+    "gen:api-types": {
+      "dependsOn": ["@apps/api#gen:openapi"],
+      "outputs": ["src/lib/api-types.gen.ts"],
+      "cache": true
     }
   }
 }
