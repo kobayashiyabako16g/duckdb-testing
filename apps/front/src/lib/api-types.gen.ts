@@ -364,14 +364,18 @@ export interface paths {
         };
         /**
          * アップロード済み CSV を一覧
-         * @description dd を指定すると当日 1 件 (無ければ空配列)、省略すると yyyy/mm の全日分を返す。
+         * @description yyyy+mm+dd で当日1件、yyyy+mm で単月分、from_yyyy/from_mm/to_yyyy/to_mm で月範囲分を返す。
          */
         get: {
             parameters: {
-                query: {
-                    yyyy: number;
-                    mm: number;
+                query?: {
+                    yyyy?: number;
+                    mm?: number;
                     dd?: number | null;
+                    from_yyyy?: number;
+                    from_mm?: number;
+                    to_yyyy?: number;
+                    to_mm?: number;
                 };
                 header?: never;
                 path?: never;

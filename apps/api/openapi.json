@@ -680,7 +680,7 @@
           "uploads"
         ],
         "summary": "アップロード済み CSV を一覧",
-        "description": "dd を指定すると当日 1 件 (無ければ空配列)、省略すると yyyy/mm の全日分を返す。",
+        "description": "yyyy+mm+dd で当日1件、yyyy+mm で単月分、from_yyyy/from_mm/to_yyyy/to_mm で月範囲分を返す。",
         "security": [
           {
             "bearerAuth": []
@@ -694,7 +694,7 @@
               "maximum": 2100,
               "example": 2025
             },
-            "required": true,
+            "required": false,
             "name": "yyyy",
             "in": "query"
           },
@@ -705,7 +705,7 @@
               "maximum": 12,
               "example": 9
             },
-            "required": true,
+            "required": false,
             "name": "mm",
             "in": "query"
           },
@@ -719,6 +719,50 @@
             },
             "required": false,
             "name": "dd",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100,
+              "example": 2025
+            },
+            "required": false,
+            "name": "from_yyyy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "example": 1
+            },
+            "required": false,
+            "name": "from_mm",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100,
+              "example": 2025
+            },
+            "required": false,
+            "name": "to_yyyy",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "example": 3
+            },
+            "required": false,
+            "name": "to_mm",
             "in": "query"
           }
         ],

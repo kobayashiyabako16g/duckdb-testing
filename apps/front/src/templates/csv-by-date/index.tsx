@@ -5,10 +5,10 @@ import { DateSelector, getJstToday } from "~/components/DateSelector";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import { useDuckDB } from "~/hooks/duckdb";
 import { ApiError } from "~/lib/apiClient";
-import { listUploads, type UploadItem } from "~/loaders/uploads";
+import { listUploads, listUploadsRange, type UploadItem } from "~/loaders/uploads";
 
 const TABLE_NAME = "csv_by_date";
-const FILE_NAME = "data.csv";
+const DAY_FILE_NAME = "data.csv";
 const PAGE_SIZE = 10;
 
 function formatSize(bytes: number): string {
@@ -30,12 +30,80 @@ function formatJst(iso: string): string {
   }).format(d);
 }
 
+function monthKey(d: { yyyy: number; mm: number }): number {
+  return d.yyyy * 100 + d.mm;
+}
+
+// SQL identifier に "" を含めるための二重化、文字列リテラルの '' 二重化。
+function quoteIdent(name: string): string {
+  return `"${name.replace(/"/g, '""')}"`;
+}
+function escapeLiteral(s: string): string {
+  return s.replace(/'/g, "''");
+}
+
+function buildWhereClause(search: string, column: string, cols: string[]): string {
+  const q = search.trim();
+  if (!q) return "";
+  const target = column && cols.includes(column) ? [column] : cols;
+  if (target.length === 0) return "";
+  const esc = escapeLiteral(q);
+  const conds = target.map((c) => `CAST(${quoteIdent(c)} AS VARCHAR) ILIKE '%${esc}%'`);
+  return `WHERE ${conds.join(" OR ")}`;
+}
+
+interface SearchBarProps {
+  columns: string[];
+  searchQuery: string;
+  searchColumn: string;
+  onSearchChange: (q: string) => void;
+  onColumnChange: (c: string) => void;
+}
+
+function SearchBar({
+  columns,
+  searchQuery,
+  searchColumn,
+  onSearchChange,
+  onColumnChange,
+}: SearchBarProps) {
+  const selectClass =
+    "px-2 py-1 border border-gray-300 rounded bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600";
+  const inputClass = `${selectClass} flex-1 min-w-0`;
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <select
+        className={selectClass}
+        value={searchColumn}
+        onChange={(e) => onColumnChange(e.target.value)}
+        disabled={columns.length === 0}
+      >
+        <option value="">全カラム</option>
+        {columns.map((c) => (
+          <option key={c} value={c}>
+            {c}
+          </option>
+        ))}
+      </select>
+      <input
+        type="search"
+        placeholder="検索..."
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        className={inputClass}
+      />
+    </div>
+  );
+}
+
 type Mode = "day" | "month";
 
 export function CsvByDateApp() {
   const today = getJstToday();
   const [mode, setMode] = useState<Mode>("day");
   const [date, setDate] = useState(today);
+  const [fromDate, setFromDate] = useState({ yyyy: today.yyyy, mm: today.mm });
+  const [toDate, setToDate] = useState({ yyyy: today.yyyy, mm: today.mm });
 
   return (
     <main className="container mx-auto p-4">
@@ -68,13 +136,10 @@ export function CsvByDateApp() {
         <DayView date={date} setDate={setDate} />
       ) : (
         <MonthView
-          yyyy={date.yyyy}
-          mm={date.mm}
-          setYearMonth={(yyyy, mm) => setDate({ yyyy, mm, dd: date.dd })}
-          openDay={(yyyy, mm, dd) => {
-            setDate({ yyyy, mm, dd });
-            setMode("day");
-          }}
+          from={fromDate}
+          to={toDate}
+          setFrom={(yyyy, mm) => setFromDate({ yyyy, mm })}
+          setTo={(yyyy, mm) => setToDate({ yyyy, mm })}
         />
       )}
     </main>
@@ -90,10 +155,13 @@ function DayView({ date, setDate }: DayViewProps) {
   const { db, initialized } = useDuckDB("duckdb-wasm-by-date");
   const [item, setItem] = useState<UploadItem | null>(null);
   const [data, setData] = useState<Record<string, unknown>[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [hint, setHint] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchColumn, setSearchColumn] = useState("");
 
   const loadForDate = useCallback(
     async (database: AsyncDuckDB, signedUrl: string) => {
@@ -105,12 +173,12 @@ function DayView({ date, setDate }: DayViewProps) {
       // DuckDB の compression='auto' は拡張子で判断するため、'data.csv' だと gzip を見落とす。
       const isGzip = bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
       const compression = isGzip ? "gzip" : "none";
-      await database.registerFileBuffer(FILE_NAME, bytes);
+      await database.registerFileBuffer(DAY_FILE_NAME, bytes);
       const conn = await database.connect();
       try {
         await conn.query(`DROP TABLE IF EXISTS ${TABLE_NAME};`);
         await conn.query(
-          `CREATE TABLE ${TABLE_NAME} AS SELECT * FROM read_csv('${FILE_NAME}', header=true, compression='${compression}');`,
+          `CREATE TABLE ${TABLE_NAME} AS SELECT * FROM read_csv('${DAY_FILE_NAME}', header=true, compression='${compression}');`,
         );
       } finally {
         await conn.close();
@@ -119,14 +187,23 @@ function DayView({ date, setDate }: DayViewProps) {
     [],
   );
 
+  const fetchColumns = useCallback(async (database: AsyncDuckDB) => {
+    const conn = await database.connect();
+    try {
+      const res = await conn.query(`DESCRIBE ${TABLE_NAME};`);
+      return res.toArray().map((r) => String((r as { column_name: unknown }).column_name));
+    } finally {
+      await conn.close();
+    }
+  }, []);
+
   const fetchPage = useCallback(
-    async (database: AsyncDuckDB, page: number) => {
+    async (database: AsyncDuckDB, page: number, where: string) => {
       const conn = await database.connect();
       try {
         const offset = page * PAGE_SIZE;
-        const res = await conn.query(
-          `SELECT * FROM ${TABLE_NAME} LIMIT ${PAGE_SIZE} OFFSET ${offset};`,
-        );
+        const sql = `SELECT * FROM ${TABLE_NAME} ${where} LIMIT ${PAGE_SIZE} OFFSET ${offset};`;
+        const res = await conn.query(sql);
         setData(res.toArray());
       } finally {
         await conn.close();
@@ -142,7 +219,10 @@ function DayView({ date, setDate }: DayViewProps) {
       setLoading(true);
       setError(null);
       setCurrentPage(0);
+      setSearchQuery("");
+      setSearchColumn("");
       setData([]);
+      setColumns([]);
       setItem(null);
       try {
         const uploads = await listUploads({ yyyy: date.yyyy, mm: date.mm, dd: date.dd });
@@ -154,7 +234,10 @@ function DayView({ date, setDate }: DayViewProps) {
         }
         await loadForDate(db, found.signedUrl);
         if (cancelled) return;
-        await fetchPage(db, 0);
+        const cols = await fetchColumns(db);
+        if (cancelled) return;
+        setColumns(cols);
+        await fetchPage(db, 0, "");
         if (cancelled) return;
         // テーブル作成 + 初期ページ取得が終わってから item を立てる。
         // 先に setItem すると、currentPage の useEffect が CREATE TABLE より前に
@@ -171,14 +254,15 @@ function DayView({ date, setDate }: DayViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [initialized, db, date.yyyy, date.mm, date.dd, loadForDate, fetchPage]);
+  }, [initialized, db, date.yyyy, date.mm, date.dd, loadForDate, fetchColumns, fetchPage]);
 
   useEffect(() => {
     if (!initialized || !db || !item) return;
     let cancelled = false;
     (async () => {
       try {
-        await fetchPage(db, currentPage);
+        const where = buildWhereClause(searchQuery, searchColumn, columns);
+        await fetchPage(db, currentPage, where);
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : String(err));
@@ -187,7 +271,7 @@ function DayView({ date, setDate }: DayViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [currentPage, initialized, db, item, fetchPage]);
+  }, [currentPage, searchQuery, searchColumn, columns, initialized, db, item, fetchPage]);
 
   return (
     <div>
@@ -212,6 +296,19 @@ function DayView({ date, setDate }: DayViewProps) {
           <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
             {item.objectPath} ({formatSize(item.size)}, {formatJst(item.uploadedAt)})
           </div>
+          <SearchBar
+            columns={columns}
+            searchQuery={searchQuery}
+            searchColumn={searchColumn}
+            onSearchChange={(q) => {
+              setSearchQuery(q);
+              setCurrentPage(0);
+            }}
+            onColumnChange={(c) => {
+              setSearchColumn(c);
+              setCurrentPage(0);
+            }}
+          />
           <DataTable data={data} />
           <div className="flex justify-start gap-4 mt-4">
             <button
@@ -240,30 +337,133 @@ function DayView({ date, setDate }: DayViewProps) {
 }
 
 interface MonthViewProps {
-  yyyy: number;
-  mm: number;
-  setYearMonth: (yyyy: number, mm: number) => void;
-  openDay: (yyyy: number, mm: number, dd: number) => void;
+  from: { yyyy: number; mm: number };
+  to: { yyyy: number; mm: number };
+  setFrom: (yyyy: number, mm: number) => void;
+  setTo: (yyyy: number, mm: number) => void;
 }
 
-function MonthView({ yyyy, mm, setYearMonth, openDay }: MonthViewProps) {
+function MonthView({ from, to, setFrom, setTo }: MonthViewProps) {
+  const { db, initialized } = useDuckDB("duckdb-wasm-by-date");
   const [items, setItems] = useState<UploadItem[]>([]);
+  const [tableReady, setTableReady] = useState(false);
+  const [data, setData] = useState<Record<string, unknown>[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hint, setHint] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchColumn, setSearchColumn] = useState("");
+
+  const loadForRange = useCallback(
+    async (database: AsyncDuckDB, uploads: UploadItem[]) => {
+      setHint("データを取得しています...");
+      const fetched = await Promise.all(
+        uploads.map(async (u) => {
+          const buf = await (await fetch(u.signedUrl)).arrayBuffer();
+          return { upload: u, bytes: new Uint8Array(buf) };
+        }),
+      );
+      setHint("DuckDB に読み込んでいます...");
+      const first = fetched[0]!.bytes;
+      const isGzip = first.length >= 2 && first[0] === 0x1f && first[1] === 0x8b;
+      const compression = isGzip ? "gzip" : "none";
+      const fileNames: string[] = [];
+      for (const { upload, bytes } of fetched) {
+        const fileName = `data_${upload.yyyy}_${String(upload.mm).padStart(2, "0")}_${String(upload.dd).padStart(2, "0")}.csv`;
+        await database.registerFileBuffer(fileName, bytes);
+        fileNames.push(fileName);
+      }
+      const filesLiteral = fileNames.map((n) => `'${n}'`).join(", ");
+      const conn = await database.connect();
+      try {
+        await conn.query(`DROP TABLE IF EXISTS ${TABLE_NAME};`);
+        await conn.query(
+          `CREATE TABLE ${TABLE_NAME} AS SELECT * FROM read_csv([${filesLiteral}], header=true, compression='${compression}', union_by_name=true);`,
+        );
+      } finally {
+        await conn.close();
+      }
+    },
+    [],
+  );
+
+  const fetchColumns = useCallback(async (database: AsyncDuckDB) => {
+    const conn = await database.connect();
+    try {
+      const res = await conn.query(`DESCRIBE ${TABLE_NAME};`);
+      return res.toArray().map((r) => String((r as { column_name: unknown }).column_name));
+    } finally {
+      await conn.close();
+    }
+  }, []);
+
+  const fetchPage = useCallback(
+    async (database: AsyncDuckDB, page: number, where: string) => {
+      const conn = await database.connect();
+      try {
+        const offset = page * PAGE_SIZE;
+        const sql = `SELECT * FROM ${TABLE_NAME} ${where} LIMIT ${PAGE_SIZE} OFFSET ${offset};`;
+        const res = await conn.query(sql);
+        setData(res.toArray());
+      } finally {
+        await conn.close();
+      }
+    },
+    [],
+  );
+
+  const invalid = monthKey(from) > monthKey(to);
 
   useEffect(() => {
+    if (!initialized || !db) return;
+    if (invalid) {
+      setError("開始月は終了月以前を指定してください。");
+      setItems([]);
+      setTableReady(false);
+      setData([]);
+      return;
+    }
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
+      setCurrentPage(0);
+      setSearchQuery("");
+      setSearchColumn("");
+      setData([]);
+      setColumns([]);
+      setTableReady(false);
+      setItems([]);
       try {
-        const uploads = await listUploads({ yyyy, mm });
-        if (!cancelled) setItems(uploads);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : String(err));
-          setItems([]);
+        const uploads = await listUploadsRange({
+          from_yyyy: from.yyyy,
+          from_mm: from.mm,
+          to_yyyy: to.yyyy,
+          to_mm: to.mm,
+        });
+        if (cancelled) return;
+        setItems(uploads);
+        if (uploads.length === 0) {
+          setLoading(false);
+          return;
         }
+        await loadForRange(db, uploads);
+        if (cancelled) return;
+        const cols = await fetchColumns(db);
+        if (cancelled) return;
+        setColumns(cols);
+        await fetchPage(db, 0, "");
+        if (cancelled) return;
+        // テーブル作成 + 初期ページ取得が終わってから tableReady を立てる
+        // (DayView と同じ理由)。
+        setTableReady(true);
+      } catch (err) {
+        if (cancelled) return;
+        const msg =
+          err instanceof ApiError ? err.message : err instanceof Error ? err.message : String(err);
+        setError(msg);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -271,17 +471,68 @@ function MonthView({ yyyy, mm, setYearMonth, openDay }: MonthViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [yyyy, mm]);
+  }, [
+    initialized,
+    db,
+    from.yyyy,
+    from.mm,
+    to.yyyy,
+    to.mm,
+    invalid,
+    loadForRange,
+    fetchColumns,
+    fetchPage,
+  ]);
+
+  useEffect(() => {
+    if (!initialized || !db || !tableReady) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const where = buildWhereClause(searchQuery, searchColumn, columns);
+        await fetchPage(db, currentPage, where);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : String(err));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentPage,
+    searchQuery,
+    searchColumn,
+    columns,
+    initialized,
+    db,
+    tableReady,
+    fetchPage,
+  ]);
+
+  const totalSize = items.reduce((acc, it) => acc + it.size, 0);
 
   return (
     <div>
-      <div className="mb-4">
-        <DateSelector
-          mode="month"
-          yyyy={yyyy}
-          mm={mm}
-          onChange={(d) => setYearMonth(d.yyyy, d.mm)}
-        />
+      <div className="mb-4 flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="w-20">開始月:</span>
+          <DateSelector
+            mode="month"
+            yyyy={from.yyyy}
+            mm={from.mm}
+            onChange={(d) => setFrom(d.yyyy, d.mm)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-20">終了月:</span>
+          <DateSelector
+            mode="month"
+            yyyy={to.yyyy}
+            mm={to.mm}
+            onChange={(d) => setTo(d.yyyy, d.mm)}
+          />
+        </div>
       </div>
       {error && (
         <div className="mb-4 p-3 rounded bg-red-50 border border-red-200 text-red-800 dark:bg-red-900 dark:border-red-700 dark:text-red-200">
@@ -289,40 +540,47 @@ function MonthView({ yyyy, mm, setYearMonth, openDay }: MonthViewProps) {
         </div>
       )}
       {loading ? (
-        <p>読み込み中...</p>
-      ) : items.length === 0 ? (
-        <p className="text-gray-600 dark:text-gray-400">対象月のアップロードはありません。</p>
+        <LoadingSpinner hint={hint} />
+      ) : tableReady ? (
+        <>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            {items.length} ファイル / 合計 {formatSize(totalSize)}
+          </div>
+          <SearchBar
+            columns={columns}
+            searchQuery={searchQuery}
+            searchColumn={searchColumn}
+            onSearchChange={(q) => {
+              setSearchQuery(q);
+              setCurrentPage(0);
+            }}
+            onColumnChange={(c) => {
+              setSearchColumn(c);
+              setCurrentPage(0);
+            }}
+          />
+          <DataTable data={data} />
+          <div className="flex justify-start gap-4 mt-4">
+            <button
+              type="button"
+              disabled={currentPage === 0}
+              onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+              className="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 disabled:opacity-50"
+            >
+              前の {PAGE_SIZE} 行
+            </button>
+            <button
+              type="button"
+              disabled={data.length < PAGE_SIZE}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              次の {PAGE_SIZE} 行
+            </button>
+          </div>
+        </>
       ) : (
-        <table className="w-full border-collapse border">
-          <thead>
-            <tr>
-              <th className="border p-2 text-left">日</th>
-              <th className="border p-2 text-left">サイズ</th>
-              <th className="border p-2 text-left">アップロード日時</th>
-              <th className="border p-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((it) => (
-              <tr key={it.objectPath}>
-                <td className="border p-2">
-                  {it.yyyy}-{String(it.mm).padStart(2, "0")}-{String(it.dd).padStart(2, "0")}
-                </td>
-                <td className="border p-2">{formatSize(it.size)}</td>
-                <td className="border p-2">{formatJst(it.uploadedAt)}</td>
-                <td className="border p-2">
-                  <button
-                    type="button"
-                    onClick={() => openDay(it.yyyy, it.mm, it.dd)}
-                    className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700"
-                  >
-                    開く
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <p className="text-gray-600 dark:text-gray-400">対象期間のアップロードはありません。</p>
       )}
     </div>
   );

@@ -59,3 +59,19 @@ export async function listUploads(input: {
   const data = await apiJson<ListUploadsResponse>(`/api/uploads?${params.toString()}`);
   return data.uploads;
 }
+
+export async function listUploadsRange(input: {
+  from_yyyy: number;
+  from_mm: number;
+  to_yyyy: number;
+  to_mm: number;
+}): Promise<UploadItem[]> {
+  const params = new URLSearchParams({
+    from_yyyy: String(input.from_yyyy),
+    from_mm: String(input.from_mm),
+    to_yyyy: String(input.to_yyyy),
+    to_mm: String(input.to_mm),
+  });
+  const data = await apiJson<ListUploadsResponse>(`/api/uploads?${params.toString()}`);
+  return data.uploads;
+}
