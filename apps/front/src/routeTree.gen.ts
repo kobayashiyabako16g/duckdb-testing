@@ -15,6 +15,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CsvByDateRouteImport } from './routes/csv/by-date'
+import { Route as CsvByChartRouteImport } from './routes/csv/by-chart'
 
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
@@ -46,6 +47,11 @@ const CsvByDateRoute = CsvByDateRouteImport.update({
   path: '/csv/by-date',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CsvByChartRoute = CsvByChartRouteImport.update({
+  id: '/csv/by-chart',
+  path: '/csv/by-chart',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/upload': typeof UploadRoute
+  '/csv/by-chart': typeof CsvByChartRoute
   '/csv/by-date': typeof CsvByDateRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/upload': typeof UploadRoute
+  '/csv/by-chart': typeof CsvByChartRoute
   '/csv/by-date': typeof CsvByDateRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/upload': typeof UploadRoute
+  '/csv/by-chart': typeof CsvByChartRoute
   '/csv/by-date': typeof CsvByDateRoute
 }
 export interface FileRouteTypes {
@@ -80,9 +89,17 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/register'
     | '/upload'
+    | '/csv/by-chart'
     | '/csv/by-date'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/home' | '/onboarding' | '/register' | '/upload' | '/csv/by-date'
+  to:
+    | '/'
+    | '/home'
+    | '/onboarding'
+    | '/register'
+    | '/upload'
+    | '/csv/by-chart'
+    | '/csv/by-date'
   id:
     | '__root__'
     | '/'
@@ -90,6 +107,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/register'
     | '/upload'
+    | '/csv/by-chart'
     | '/csv/by-date'
   fileRoutesById: FileRoutesById
 }
@@ -99,6 +117,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   RegisterRoute: typeof RegisterRoute
   UploadRoute: typeof UploadRoute
+  CsvByChartRoute: typeof CsvByChartRoute
   CsvByDateRoute: typeof CsvByDateRoute
 }
 
@@ -146,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CsvByDateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/csv/by-chart': {
+      id: '/csv/by-chart'
+      path: '/csv/by-chart'
+      fullPath: '/csv/by-chart'
+      preLoaderRoute: typeof CsvByChartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -155,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   RegisterRoute: RegisterRoute,
   UploadRoute: UploadRoute,
+  CsvByChartRoute: CsvByChartRoute,
   CsvByDateRoute: CsvByDateRoute,
 }
 export const routeTree = rootRouteImport

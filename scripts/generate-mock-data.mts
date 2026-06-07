@@ -5,6 +5,7 @@
 // Usage:
 //   node scripts/generate-mock-data.mts
 //   node scripts/generate-mock-data.mts --rows 365 --start 2026-06-01 --out ./mock_data.csv
+//   node scripts/generate-mock-data.mts --start 2026-06-01 --end 2026-12-31
 
 import { writeFile } from "node:fs/promises";
 import { parseArgs, promisify } from "node:util";
@@ -18,22 +19,39 @@ const { values } = parseArgs({
     rows: { type: "string", default: "10000" },
     out: { type: "string", default: "mock_data.csv" },
     start: { type: "string", default: "2026-06-01" },
+    end: { type: "string" },
   },
 });
 
-const rowCount = Number(values.rows);
 const outPath = values.out!;
 const startStr = values.start!;
-
-if (!Number.isFinite(rowCount) || rowCount <= 0) {
-  console.error(`invalid --rows: ${values.rows}`);
-  process.exit(1);
-}
+const endStr = values.end;
 
 const startDate = new Date(`${startStr}T00:00:00Z`);
 if (Number.isNaN(startDate.getTime())) {
   console.error(`invalid --start: ${startStr}`);
   process.exit(1);
+}
+
+let rowCount: number;
+if (endStr !== undefined) {
+  const endDate = new Date(`${endStr}T00:00:00Z`);
+  if (Number.isNaN(endDate.getTime())) {
+    console.error(`invalid --end: ${endStr}`);
+    process.exit(1);
+  }
+  if (endDate.getTime() < startDate.getTime()) {
+    console.error(`--end (${endStr}) must be >= --start (${startStr})`);
+    process.exit(1);
+  }
+  rowCount =
+    Math.floor((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
+} else {
+  rowCount = Number(values.rows);
+  if (!Number.isFinite(rowCount) || rowCount <= 0) {
+    console.error(`invalid --rows: ${values.rows}`);
+    process.exit(1);
+  }
 }
 
 function fmtDate(d: Date): string {
