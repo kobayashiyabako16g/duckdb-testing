@@ -4,7 +4,7 @@
 //   https://nodejs.org/api/typescript.html#type-stripping
 // Usage:
 //   node scripts/generate-mock-data.mts
-//   node scripts/generate-mock-data.mts --rows 50000 --out ./mock_data.csv
+//   node scripts/generate-mock-data.mts --rows 365 --start 2026-06-01 --out ./mock_data.csv
 
 import { writeFile } from "node:fs/promises";
 import { parseArgs, promisify } from "node:util";
@@ -17,23 +17,39 @@ const { values } = parseArgs({
   options: {
     rows: { type: "string", default: "10000" },
     out: { type: "string", default: "mock_data.csv" },
+    start: { type: "string", default: "2026-06-01" },
   },
 });
 
 const rowCount = Number(values.rows);
 const outPath = values.out!;
+const startStr = values.start!;
 
 if (!Number.isFinite(rowCount) || rowCount <= 0) {
   console.error(`invalid --rows: ${values.rows}`);
   process.exit(1);
 }
 
-const lines: string[] = ["id,first_name,last_name,email,gender,ip_address"];
-for (let i = 1; i <= rowCount; i++) {
-  const fn = faker.person.firstName();
-  const ln = faker.person.lastName();
-  const email = `${fn.toLowerCase()}.${ln.toLowerCase()}${i}@example.com`;
-  lines.push([i, fn, ln, email, faker.person.sex(), faker.internet.ipv4()].join(","));
+const startDate = new Date(`${startStr}T00:00:00Z`);
+if (Number.isNaN(startDate.getTime())) {
+  console.error(`invalid --start: ${startStr}`);
+  process.exit(1);
+}
+
+function fmtDate(d: Date): string {
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+const lines: string[] = ["timestamp,cpu_usage,memory_usage,swap_usage"];
+for (let i = 0; i < rowCount; i++) {
+  const d = new Date(startDate.getTime() + i * 86400000);
+  const cpu = faker.number.float({ min: 0, max: 100, fractionDigits: 1 });
+  const mem = faker.number.float({ min: 0, max: 100, fractionDigits: 1 });
+  const swap = faker.number.float({ min: 0, max: 100, fractionDigits: 1 });
+  lines.push([fmtDate(d), cpu, mem, swap].join(","));
 }
 
 const csv = Buffer.from(lines.join("\n") + "\n", "utf8");
