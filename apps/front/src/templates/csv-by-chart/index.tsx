@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  Area,
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
@@ -81,15 +89,31 @@ function isNumericType(t: string): boolean {
   );
 }
 
+function formatYmd(d: Date): string {
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 function formatXValue(v: unknown): string {
   if (v == null) return "";
-  if (v instanceof Date) {
-    return new Intl.DateTimeFormat("ja-JP", {
-      timeZone: "Asia/Tokyo",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(v);
+  if (v instanceof Date) return formatYmd(v);
+  if (typeof v === "bigint" || typeof v === "number") {
+    let n = Number(v);
+    if (Number.isFinite(n) && n > 1e11) {
+      // DuckDB が DATE/TIMESTAMP をエポック値で返すケース。
+      // 10^14 を超える値はマイクロ秒とみなしてミリ秒に変換する。
+      if (n > 1e14) n = n / 1000;
+      return formatYmd(new Date(n));
+    }
+    return String(v);
+  }
+  if (typeof v === "string") {
+    const m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}/${m[2]}/${m[3]}`;
   }
   return String(v);
 }
@@ -117,6 +141,16 @@ function buildChartConfig(series: string[]): ChartConfig {
   return cfg;
 }
 
+type SeriesKind = "area" | "bar" | "line";
+
+function pickSeriesKind(name: string): SeriesKind {
+  const n = name.toLowerCase();
+  if (n.includes("cpu")) return "area";
+  if (n.includes("mem")) return "bar";
+  if (n.includes("swap")) return "line";
+  return "line";
+}
+
 interface CsvLineChartProps {
   data: ChartData;
 }
@@ -141,7 +175,7 @@ function CsvLineChart({ data }: CsvLineChartProps) {
 
   return (
     <ChartContainer config={config} className="h-[420px] w-full">
-      <LineChart
+      <ComposedChart
         data={data.rows}
         margin={{ left: 12, right: 24, top: 12, bottom: 12 }}
       >
@@ -155,18 +189,46 @@ function CsvLineChart({ data }: CsvLineChartProps) {
         <YAxis tickLine={false} axisLine={false} width={48} />
         <ChartTooltip content={<ChartTooltipContent />} />
         <ChartLegend content={<ChartLegendContent />} />
-        {data.series.map((s) => (
-          <Line
-            key={s}
-            type="monotone"
-            dataKey={s}
-            stroke={`var(--color-${s})`}
-            strokeWidth={2}
-            dot={false}
-            isAnimationActive={false}
-          />
-        ))}
-      </LineChart>
+        {data.series.map((s) => {
+          const color = `var(--color-${s})`;
+          const kind = pickSeriesKind(s);
+          if (kind === "area") {
+            return (
+              <Area
+                key={s}
+                type="monotone"
+                dataKey={s}
+                stroke={color}
+                fill={color}
+                fillOpacity={0.3}
+                strokeWidth={2}
+                isAnimationActive={false}
+              />
+            );
+          }
+          if (kind === "bar") {
+            return (
+              <Bar
+                key={s}
+                dataKey={s}
+                fill={color}
+                isAnimationActive={false}
+              />
+            );
+          }
+          return (
+            <Line
+              key={s}
+              type="monotone"
+              dataKey={s}
+              stroke={color}
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />
+          );
+        })}
+      </ComposedChart>
     </ChartContainer>
   );
 }
