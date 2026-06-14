@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
   ChartLegend,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
@@ -157,6 +156,16 @@ interface CsvLineChartProps {
 
 function CsvLineChart({ data }: CsvLineChartProps) {
   const config = useMemo(() => buildChartConfig(data.series), [data.series]);
+  const [hidden, setHidden] = useState<Set<string>>(() => new Set());
+
+  const toggle = useCallback((s: string) => {
+    setHidden((prev) => {
+      const next = new Set(prev);
+      if (next.has(s)) next.delete(s);
+      else next.add(s);
+      return next;
+    });
+  }, []);
 
   if (data.series.length === 0) {
     return (
@@ -174,62 +183,90 @@ function CsvLineChart({ data }: CsvLineChartProps) {
   }
 
   return (
-    <ChartContainer config={config} className="h-[420px] w-full">
-      <ComposedChart
-        data={data.rows}
-        margin={{ left: 12, right: 24, top: 12, bottom: 12 }}
-      >
-        <CartesianGrid vertical={false} />
-        <XAxis
-          dataKey={data.xKey}
-          tickLine={false}
-          axisLine={false}
-          minTickGap={32}
-        />
-        <YAxis tickLine={false} axisLine={false} width={48} />
-        <ChartTooltip content={<ChartTooltipContent />} />
-        <ChartLegend content={<ChartLegendContent />} />
-        {data.series.map((s) => {
-          const color = `var(--color-${s})`;
-          const kind = pickSeriesKind(s);
-          if (kind === "area") {
+    <div className="w-full">
+      <ChartContainer config={config} className="h-[420px] w-full">
+        <ComposedChart
+          data={data.rows}
+          margin={{ left: 12, right: 24, top: 12, bottom: 12 }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey={data.xKey}
+            tickLine={false}
+            axisLine={false}
+            minTickGap={32}
+          />
+          <YAxis tickLine={false} axisLine={false} width={48} />
+          <ChartTooltip content={<ChartTooltipContent />} />
+          <ChartLegend
+            verticalAlign="bottom"
+            content={() => (
+              <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+                {data.series.map((s) => {
+                  const isHidden = hidden.has(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => toggle(s)}
+                      className={`flex items-center gap-1.5 cursor-pointer text-xs transition-opacity ${
+                        isHidden ? "opacity-40" : ""
+                      }`}
+                    >
+                      <span
+                        className="h-2 w-2 shrink-0 rounded-[2px]"
+                        style={{ backgroundColor: `var(--color-${s})` }}
+                      />
+                      {String(config[s]?.label ?? s)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+          {data.series.map((s) => {
+            if (hidden.has(s)) return null;
+            const color = `var(--color-${s})`;
+            const kind = pickSeriesKind(s);
+            if (kind === "area") {
+              return (
+                <Area
+                  key={s}
+                  type="monotone"
+                  dataKey={s}
+                  stroke={color}
+                  fill={color}
+                  fillOpacity={0.3}
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+              );
+            }
+            if (kind === "bar") {
+              return (
+                <Bar
+                  key={s}
+                  dataKey={s}
+                  fill={color}
+                  isAnimationActive={false}
+                />
+              );
+            }
             return (
-              <Area
+              <Line
                 key={s}
                 type="monotone"
                 dataKey={s}
                 stroke={color}
-                fill={color}
-                fillOpacity={0.3}
                 strokeWidth={2}
+                dot={false}
                 isAnimationActive={false}
               />
             );
-          }
-          if (kind === "bar") {
-            return (
-              <Bar
-                key={s}
-                dataKey={s}
-                fill={color}
-                isAnimationActive={false}
-              />
-            );
-          }
-          return (
-            <Line
-              key={s}
-              type="monotone"
-              dataKey={s}
-              stroke={color}
-              strokeWidth={2}
-              dot={false}
-              isAnimationActive={false}
-            />
-          );
-        })}
-      </ComposedChart>
-    </ChartContainer>
+          })}
+        </ComposedChart>
+      </ChartContainer>
+    </div>
   );
 }
 
