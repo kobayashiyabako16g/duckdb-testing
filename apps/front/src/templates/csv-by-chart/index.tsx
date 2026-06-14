@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { AsyncDuckDB } from "@duckdb/duckdb-wasm";
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
@@ -20,7 +14,11 @@ import { DateSelector, getJstToday } from "~/components/DateSelector";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import { useDuckDB } from "~/hooks/duckdb";
 import { ApiError } from "~/lib/apiClient";
-import { listUploads, listUploadsRange, type UploadItem } from "~/loaders/uploads";
+import {
+  listUploads,
+  listUploadsRange,
+  type UploadItem,
+} from "~/loaders/uploads";
 
 const TABLE_NAME = "csv_by_chart";
 const DAY_FILE_NAME = "data.csv";
@@ -238,7 +236,10 @@ function pickAxes(cols: ColumnMeta[]): { xKey: string; series: string[] } {
   if (cols.length === 0) return { xKey: "", series: [] };
   // 先頭列を X 軸として固定。残りの数値列を系列として扱う。
   const xKey = cols[0]!.name;
-  const series = cols.slice(1).filter((c) => isNumericType(c.type)).map((c) => c.name);
+  const series = cols
+    .slice(1)
+    .filter((c) => isNumericType(c.type))
+    .map((c) => c.name);
   return { xKey, series };
 }
 
@@ -248,7 +249,9 @@ async function queryChartRows(
   series: string[],
 ): Promise<Record<string, unknown>[]> {
   if (!xKey || series.length === 0) return [];
-  const cols = [xKey, ...series].map((c) => `"${c.replace(/"/g, '""')}"`).join(", ");
+  const cols = [xKey, ...series]
+    .map((c) => `"${c.replace(/"/g, '""')}"`)
+    .join(", ");
   const orderClause = `ORDER BY "${xKey.replace(/"/g, '""')}"`;
   const sql = `SELECT ${cols} FROM ${TABLE_NAME} ${orderClause} LIMIT ${MAX_POINTS};`;
   const conn = await database.connect();
@@ -279,7 +282,8 @@ function DayChartView({ date, setDate }: DayChartViewProps) {
       const buf = await (await fetch(signedUrl)).arrayBuffer();
       setHint("DuckDB に読み込んでいます...");
       const bytes = new Uint8Array(buf);
-      const isGzip = bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+      const isGzip =
+        bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
       const compression = isGzip ? "gzip" : "none";
       await database.registerFileBuffer(DAY_FILE_NAME, bytes);
       const conn = await database.connect();
@@ -304,7 +308,11 @@ function DayChartView({ date, setDate }: DayChartViewProps) {
       setChart(null);
       setItem(null);
       try {
-        const uploads = await listUploads({ yyyy: date.yyyy, mm: date.mm, dd: date.dd });
+        const uploads = await listUploads({
+          yyyy: date.yyyy,
+          mm: date.mm,
+          dd: date.dd,
+        });
         if (cancelled) return;
         const found = uploads[0] ?? null;
         if (!found) {
@@ -368,7 +376,9 @@ function DayChartView({ date, setDate }: DayChartViewProps) {
           </CardContent>
         </Card>
       ) : (
-        <p className="text-gray-600 dark:text-gray-400">対象日のアップロードはありません。</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          対象日のアップロードはありません。
+        </p>
       )}
     </div>
   );
@@ -400,7 +410,8 @@ function MonthChartView({ from, to, setFrom, setTo }: MonthChartViewProps) {
       );
       setHint("DuckDB に読み込んでいます...");
       const first = fetched[0]!.bytes;
-      const isGzip = first.length >= 2 && first[0] === 0x1f && first[1] === 0x8b;
+      const isGzip =
+        first.length >= 2 && first[0] === 0x1f && first[1] === 0x8b;
       const compression = isGzip ? "gzip" : "none";
       const fileNames: string[] = [];
       for (const { upload, bytes } of fetched) {
@@ -474,7 +485,16 @@ function MonthChartView({ from, to, setFrom, setTo }: MonthChartViewProps) {
     return () => {
       cancelled = true;
     };
-  }, [initialized, db, from.yyyy, from.mm, to.yyyy, to.mm, invalid, loadForRange]);
+  }, [
+    initialized,
+    db,
+    from.yyyy,
+    from.mm,
+    to.yyyy,
+    to.mm,
+    invalid,
+    loadForRange,
+  ]);
 
   const totalSize = items.reduce((acc, it) => acc + it.size, 0);
 
@@ -522,7 +542,9 @@ function MonthChartView({ from, to, setFrom, setTo }: MonthChartViewProps) {
           </CardContent>
         </Card>
       ) : (
-        <p className="text-gray-600 dark:text-gray-400">対象期間のアップロードはありません。</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          対象期間のアップロードはありません。
+        </p>
       )}
     </div>
   );

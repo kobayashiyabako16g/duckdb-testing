@@ -44,8 +44,7 @@ if (endStr !== undefined) {
     console.error(`--end (${endStr}) must be >= --start (${startStr})`);
     process.exit(1);
   }
-  rowCount =
-    Math.floor((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
+  rowCount = Math.floor((endDate.getTime() - startDate.getTime()) / 86400000) + 1;
 } else {
   rowCount = Number(values.rows);
   if (!Number.isFinite(rowCount) || rowCount <= 0) {
@@ -63,6 +62,7 @@ function fmtDate(d: Date): string {
 
 const lines: string[] = ["timestamp,cpu_usage,memory_usage,swap_usage"];
 for (let i = 0; i < rowCount; i++) {
+  // startDate から 1 日ずつ増やした日時を生成
   const d = new Date(startDate.getTime() + i * 86400000);
   const cpu = faker.number.float({ min: 0, max: 100, fractionDigits: 1 });
   const mem = faker.number.float({ min: 0, max: 100, fractionDigits: 1 });
