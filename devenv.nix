@@ -30,12 +30,11 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
-  scripts.hello.exec = ''
-    echo hello from $GREET
-  '';
+  # scripts.local_duckdb.exec = ''
+  #   gcloud auth application-default login --impersonate-service-account=${LOCAL_DUCKDB_SA}
+  # '';
 
-   enterShell = ''
-    hello
+  enterShell = ''
     source <(pnpm completion zsh)
     git --version
     node --version
